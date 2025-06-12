@@ -33,6 +33,9 @@ class Base(pygame.sprite.Sprite):
     def move(self):
         self.rect.x -= 1
 
+        if frame_up_to_60 % 2 == 0:
+            self.rect.x -= 1
+
         if self.rect.x <= -576:
             self.rect.x = 576
 
