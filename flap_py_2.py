@@ -26,12 +26,9 @@ def add_sprites():
     skies.add(Sky(0))
     skies.add(Sky(576))
 
-def render_objects():
-    screen.fill((0, 0, 0))
-    skies.draw(screen)
-
-def update_objects():
+def main():
     skies.update()
+    skies.draw(screen)
 
 
 # initiating variables
@@ -58,8 +55,7 @@ while True:
 
     # important functions / variables
     if running:
-        update_objects()
-        render_objects()
+        main()
 
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
