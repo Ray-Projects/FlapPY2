@@ -30,6 +30,14 @@ def main():
     skies.update()
     skies.draw(screen)
 
+def title():
+    skies.update()
+    skies.draw(screen)
+
+def dead():
+    skies.update()
+    skies.draw(screen)
+
 
 # initiating variables
 pygame.init()
@@ -45,7 +53,7 @@ skies = pygame.sprite.Group()
 add_sprites()
 
 # game loop
-running = True
+mode = title
 while True:
     # check for events
     for event in pygame.event.get():
@@ -54,8 +62,12 @@ while True:
             exit()
 
     # important functions / variables
-    if running:
+    if mode == main:
         main()
+    elif mode == title:
+        title()
+    elif mode == dead:
+        dead()
 
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
