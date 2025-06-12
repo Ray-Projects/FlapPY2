@@ -9,15 +9,25 @@ class Sky(pygame.sprite.Sprite):
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
-        self.size = self.image.get_size()
         self.rect = self.image.get_rect(topleft=(x, 0))
+
+    def move(self):
+        if frame_up_to_60 % 2 == 0:
+            self.rect.x -= 1
+
+        if self.rect.x <= -576:
+            self.rect.x = 576
+
+    def update(self):
+        self.move()
 
 # functions
 def add_sprites():
     skies.add(Sky(0))
-    skies.add(Sky(1024))
+    skies.add(Sky(576))
 
 def render_objects():
+    screen.fill((0, 0, 0))
     skies.draw(screen)
 
 def update_objects():
@@ -30,8 +40,9 @@ screen = pygame.display.set_mode((576, 1024))
 pygame.display.set_caption('Flappy Bird')
 clock = pygame.time.Clock()
 
-# starting vars
+# variables
 scaling = 2
+frame_up_to_60 = 0
 
 skies = pygame.sprite.Group()
 add_sprites()
@@ -45,9 +56,14 @@ while True:
             pygame.quit()
             exit()
 
+    # important functions / variables
     if running:
         update_objects()
         render_objects()
+
+    frame_up_to_60 += 1
+    if frame_up_to_60 > 60:
+        frame_up_to_60 = 0
 
     pygame.display.flip()
     clock.tick(60)
