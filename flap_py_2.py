@@ -1,5 +1,6 @@
 import pygame
 from sys import exit
+from random import randint
 
 # sprites
 class Sky(pygame.sprite.Sprite):
@@ -42,6 +43,29 @@ class Base(pygame.sprite.Sprite):
     def update(self):
         self.move()
 
+class Pipe(pygame.sprite.Sprite):
+    def __init__(self, x):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("flappy-bird-assets-master/sprites/pipe-green.png")
+        tmp0 = self.image.width * scaling
+        tmp1 = self.image.height * scaling
+        self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+        self.rect = self.image.get_rect(bottomleft=(x, randint(900, 1350)))
+
+    def move(self):
+        self.rect.x -= 1
+
+        if frame_up_to_60 % 2 == 0:
+            self.rect.x -= 1
+
+        if self.rect.x <= -self.image.width:
+            self.rect.bottomleft = (864, randint(900, 1350))
+
+
+    def update(self):
+        self.move()
+
+
 # functions
 def add_sprites():
     skies.add(Sky(0))
@@ -49,20 +73,36 @@ def add_sprites():
     bases.add(Base(0))
     bases.add(Base(576))
 
+    pipes.add(Pipe(576))
+    pipes.add(Pipe(864))
+    pipes.add(Pipe(1152))
+
 def update_background():
     skies.update()
     skies.draw(screen)
+
+def update_foreground():
     bases.update()
     bases.draw(screen)
 
+def update_midground():
+    pipes.update()
+    pipes.draw(screen)
+
+# function loops
 def main():
     update_background()
+    update_midground()
+    update_foreground()
 
 def title():
     update_background()
+    update_foreground()
 
 def dead():
     update_background()
+    update_midground()
+    update_foreground()
 
 # initiating variables
 pygame.init()
@@ -76,10 +116,11 @@ frame_up_to_60 = 0
 
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
+pipes = pygame.sprite.Group()
 add_sprites()
 
 # game loop
-mode = title
+mode = "main"
 while True:
     # check for events
     for event in pygame.event.get():
@@ -88,11 +129,11 @@ while True:
             exit()
 
     # important functions / variables
-    if mode == main:
+    if mode == "main":
         main()
-    elif mode == title:
+    elif mode == "title":
         title()
-    elif mode == dead:
+    elif mode == "dead":
         dead()
 
     frame_up_to_60 += 1
