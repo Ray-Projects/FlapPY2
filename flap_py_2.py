@@ -21,23 +21,45 @@ class Sky(pygame.sprite.Sprite):
     def update(self):
         self.move()
 
+class Base(pygame.sprite.Sprite):
+    def __init__(self, x):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("flappy-bird-assets-master/sprites/base.png")
+        tmp0 = self.image.width * scaling
+        tmp1 = self.image.height * scaling
+        self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+        self.rect = self.image.get_rect(bottomleft=(x, 1024))
+
+    def move(self):
+        self.rect.x -= 1
+
+        if self.rect.x <= -576:
+            self.rect.x = 576
+
+    def update(self):
+        self.move()
+
 # functions
 def add_sprites():
     skies.add(Sky(0))
     skies.add(Sky(576))
+    bases.add(Base(0))
+    bases.add(Base(576))
+
+def update_background():
+    skies.update()
+    skies.draw(screen)
+    bases.update()
+    bases.draw(screen)
 
 def main():
-    skies.update()
-    skies.draw(screen)
+    update_background()
 
 def title():
-    skies.update()
-    skies.draw(screen)
+    update_background()
 
 def dead():
-    skies.update()
-    skies.draw(screen)
-
+    update_background()
 
 # initiating variables
 pygame.init()
@@ -50,6 +72,7 @@ scaling = 2
 frame_up_to_60 = 0
 
 skies = pygame.sprite.Group()
+bases = pygame.sprite.Group()
 add_sprites()
 
 # game loop
