@@ -25,8 +25,8 @@ class Base(pygame.sprite.Sprite):
     def move(self):
         self.rect.x -= 2
 
-        if self.rect.x <= -576:
-            self.rect.x = 576
+        if self.rect.x <= -important_coords[0]:
+            self.rect.x = important_coords[0]
 
     def update(self):
         self.move()
@@ -66,7 +66,7 @@ class Pipe(pygame.sprite.Sprite):
 def add_sprites():
     skies.add(Sky())
     bases.add(Base(0))
-    bases.add(Base(important_coords[1]))
+    bases.add(Base(important_coords[0]))
 
     # for future me: WHY 4 NOT 3? If
     add_pipe(important_coords[0], randint(300, 700))
