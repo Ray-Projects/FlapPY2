@@ -55,7 +55,7 @@ class Pipe(pygame.sprite.Sprite):
 
         if self.rect.x <= -288:
             if self.position == 1:
-                add_pipe(864, randint(300, 700))
+                add_pipe(important_coords[1], randint(300, 700))
             self.kill()
 
     def update(self):
@@ -66,7 +66,7 @@ class Pipe(pygame.sprite.Sprite):
 def add_sprites():
     skies.add(Sky())
     bases.add(Base(0))
-    bases.add(Base(576))
+    bases.add(Base(important_coords[1]))
 
     # for future me: WHY 4 NOT 3? If
     add_pipe(important_coords[0], randint(300, 700))
