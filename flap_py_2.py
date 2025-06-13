@@ -12,9 +12,6 @@ class Sky(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
         self.rect = self.image.get_rect(topleft=(0, 0))
 
-    def update(self):
-        print()
-
 
 class Base(pygame.sprite.Sprite):
     def __init__(self, x):
@@ -26,10 +23,7 @@ class Base(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(bottomleft=(x, 1024))
 
     def move(self):
-        self.rect.x -= 1
-
-        if frame_up_to_60 % 2 == 0:
-            self.rect.x -= 1
+        self.rect.x -= 2
 
         if self.rect.x <= -576:
             self.rect.x = 576
@@ -38,23 +32,31 @@ class Base(pygame.sprite.Sprite):
         self.move()
 
 class Pipe(pygame.sprite.Sprite):
-    def __init__(self, x):
+    def __init__(self, x, y, position):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("flappy-bird-assets-master/sprites/pipe-green.png").convert_alpha()
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+
+        self.position = position
+        if self.position == 1:
+            self.image = pygame.transform.flip(self.image, False, True)
+            self.rect = self.image.get_rect(bottomleft=(x, y))
+        elif self.position == -1:
+            self.rect = self.image.get_rect(topleft=(x, y))
+
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect(bottomleft=(x, randint(900, 1350)))
 
     def move(self):
-        self.rect.x -= 1
+        global pipes
 
-        if frame_up_to_60 % 2 == 0:
-            self.rect.x -= 1
+        self.rect.x -= 2
 
-        if self.rect.x <= -self.image.width:
-            self.rect.bottomleft = (864, randint(900, 1350))
+        if self.rect.x <= -288:
+            if self.position == 1:
+                add_pipe(864, randint(300, 700))
+            self.kill()
 
     def update(self):
         self.move()
@@ -66,9 +68,16 @@ def add_sprites():
     bases.add(Base(0))
     bases.add(Base(576))
 
-    pipes.add(Pipe(576))
-    pipes.add(Pipe(864))
-    pipes.add(Pipe(1152))
+    # for future me: WHY 4 NOT 3? If
+    add_pipe(important_coords[0], randint(300, 700))
+    add_pipe(important_coords[1], randint(300, 700))
+    add_pipe(important_coords[2], randint(300, 700))
+    add_pipe(important_coords[3], randint(300, 700))
+
+def add_pipe(x, y):
+    global pipes, pipe_gap
+    pipes.add(Pipe(x, y - pipe_gap, 1))
+    pipes.add(Pipe(x, y, -1))
 
 def update_background():
     skies.update()
@@ -105,8 +114,9 @@ clock = pygame.time.Clock()
 
 # variables
 scaling = 2
-pipe_gap = 96
+pipe_gap = 200
 frame_up_to_60 = 0
+important_coords = [576, 864, 1152, 1440]
 
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
