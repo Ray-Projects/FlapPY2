@@ -53,9 +53,9 @@ class Pipe(pygame.sprite.Sprite):
 
         self.rect.x -= 2
 
-        if self.rect.x <= -288:
+        if self.rect.x <= -self.image.width: #-288:
             if self.position == 1:
-                add_pipe(important_coords[1], randint(300, 700))
+                add_pipe(important_coords[1] -self.image.width, randint(300, 700))
             self.kill()
 
     def update(self):
@@ -68,11 +68,9 @@ def add_sprites():
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
 
-    # for future me: WHY 4 NOT 3? If
     add_pipe(important_coords[0], randint(300, 700))
     add_pipe(important_coords[1], randint(300, 700))
     add_pipe(important_coords[2], randint(300, 700))
-    add_pipe(important_coords[3], randint(300, 700))
 
 def add_pipe(x, y):
     global pipes, pipe_gap
