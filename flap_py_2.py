@@ -53,10 +53,11 @@ class Pipe(pygame.sprite.Sprite):
 
         self.rect.x -= 2
 
-        if self.rect.x <= -self.image.width: #-288:
-            if self.position == 1:
-                add_pipe(important_coords[1] -self.image.width, randint(300, 700))
-            self.kill()
+        if not(self.rect.x <= -self.image.width):
+            return
+        if self.position == 1:
+            add_pipe(important_coords[1] -self.image.width, randint(300, 700))
+        self.kill()
 
     def update(self):
         self.move()
@@ -77,32 +78,31 @@ def add_pipe(x, y):
     pipes.add(Pipe(x, y - pipe_gap, 1))
     pipes.add(Pipe(x, y, -1))
 
-def update_background():
-    skies.update()
-    skies.draw(screen)
-
-def update_foreground():
-    bases.update()
-    bases.draw(screen)
-
-def update_midground():
-    pipes.update()
-    pipes.draw(screen)
+def update_sprites(type):
+    if type == 0:
+        skies.update()
+        skies.draw(screen)
+    if type == 1:
+        bases.update()
+        bases.draw(screen)
+    if type == 2:
+        pipes.update()
+        pipes.draw(screen)
 
 # function loops
 def main():
-    update_background()
-    update_midground()
-    update_foreground()
+    update_sprites(0)
+    update_sprites(1)
+    update_sprites(2)
 
 def title():
-    update_background()
-    update_foreground()
+    update_sprites(0)
+    update_sprites(2)
 
 def dead():
-    update_background()
-    update_midground()
-    update_foreground()
+    update_sprites(0)
+    update_sprites(1)
+    update_sprites(2)
 
 # initiating variables
 pygame.init()
