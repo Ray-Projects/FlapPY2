@@ -4,28 +4,22 @@ from random import randint
 
 # sprites
 class Sky(pygame.sprite.Sprite):
-    def __init__(self, x):
+    def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("flappy-bird-assets-master/sprites/background-day.png")
+        self.image = pygame.image.load("flappy-bird-assets-master/sprites/background-day.png").convert()
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
-        self.rect = self.image.get_rect(topleft=(x, 0))
-
-    def move(self):
-        if frame_up_to_60 % 2 == 0:
-            self.rect.x -= 1
-
-        if self.rect.x <= -576:
-            self.rect.x = 576
+        self.rect = self.image.get_rect(topleft=(0, 0))
 
     def update(self):
-        self.move()
+        print()
+
 
 class Base(pygame.sprite.Sprite):
     def __init__(self, x):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("flappy-bird-assets-master/sprites/base.png")
+        self.image = pygame.image.load("flappy-bird-assets-master/sprites/base.png").convert()
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
@@ -46,10 +40,11 @@ class Base(pygame.sprite.Sprite):
 class Pipe(pygame.sprite.Sprite):
     def __init__(self, x):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("flappy-bird-assets-master/sprites/pipe-green.png")
+        self.image = pygame.image.load("flappy-bird-assets-master/sprites/pipe-green.png").convert_alpha()
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(bottomleft=(x, randint(900, 1350)))
 
     def move(self):
@@ -61,15 +56,13 @@ class Pipe(pygame.sprite.Sprite):
         if self.rect.x <= -self.image.width:
             self.rect.bottomleft = (864, randint(900, 1350))
 
-
     def update(self):
         self.move()
 
 
 # functions
 def add_sprites():
-    skies.add(Sky(0))
-    skies.add(Sky(576))
+    skies.add(Sky())
     bases.add(Base(0))
     bases.add(Base(576))
 
@@ -112,6 +105,7 @@ clock = pygame.time.Clock()
 
 # variables
 scaling = 2
+pipe_gap = 96
 frame_up_to_60 = 0
 
 skies = pygame.sprite.Group()
