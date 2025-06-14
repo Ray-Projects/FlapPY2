@@ -65,10 +65,20 @@ class Pipe(pygame.sprite.Sprite):
 class Bird(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-midflap.png").convert_alpha()
-        tmp0 = self.image.width * scaling
-        tmp1 = self.image.height * scaling
-        self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+        self.downflap = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-downflap.png").convert_alpha()
+        self.midflap = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-midflap.png").convert_alpha()
+        self.upflap = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-upflap.png").convert_alpha()
+
+        # all the bird flapping images are the same width and height, so we don't have to get the size of every single one!
+        tmp0 = self.downflap.width * scaling
+        tmp1 = self.downflap.height * scaling
+        self.downflap = pygame.transform.scale(self.downflap, (tmp0, tmp1))
+        self.midflap = pygame.transform.scale(self.midflap, (tmp0, tmp1))
+        self.upflap = pygame.transform.scale(self.upflap, (tmp0, tmp1))
+
+        self.flap = [self.downflap, self.midflap, self.upflap, self.midflap]
+        self.index = 0
+        self.image = self.flap[self.index]
         self.rect = self.image.get_rect(topleft=(250, 200))
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -83,9 +93,15 @@ class Bird(pygame.sprite.Sprite):
         if self.rect.y < 224:
             mode = "dead"
 
+    def animate(self):
+        self.index += 0.3
+        if self.index >= len(self.flap):
+            self.index = 0
+        self.image = self.flap[int(self.index)]
 
     def update(self):
         self.move()
+        self.animate()
 
 # functions
 def add_sprites():
