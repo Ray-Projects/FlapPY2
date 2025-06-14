@@ -74,12 +74,12 @@ class Bird(pygame.sprite.Sprite):
 # functions
 def add_sprites():
     skies.add(Sky())
-    bases.add(Base(0))
-    bases.add(Base(important_coords[0]))
-
+    bird.add(Bird())
     add_pipe(important_coords[0], randint(300, 700))
     add_pipe(important_coords[1], randint(300, 700))
     add_pipe(important_coords[2], randint(300, 700))
+    bases.add(Base(0))
+    bases.add(Base(important_coords[0]))
 
 def add_pipe(x, y):
     global pipes, pipe_gap
