@@ -23,7 +23,7 @@ class Base(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(bottomleft=(x, 1024))
 
     def move(self):
-        self.rect.x -= 2
+        self.rect.x -= 3
 
         if self.rect.x <= -important_coords[0]:
             self.rect.x = important_coords[0]
@@ -51,7 +51,7 @@ class Pipe(pygame.sprite.Sprite):
     def move(self):
         global pipes
 
-        self.rect.x -= 2
+        self.rect.x -= 3
 
         if not(self.rect.x <= -self.image.width):
             return
@@ -69,16 +69,16 @@ class Bird(pygame.sprite.Sprite):
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
-        self.rect = self.image.get_rect(topleft=(150, 800))
+        self.rect = self.image.get_rect(topleft=(250, 200))
         self.mask = pygame.mask.from_surface(self.image)
 
 # functions
 def add_sprites():
     skies.add(Sky())
     bird.add(Bird())
-    add_pipe(important_coords[0], randint(300, 700))
     add_pipe(important_coords[1], randint(300, 700))
     add_pipe(important_coords[2], randint(300, 700))
+    add_pipe(important_coords[3], randint(300, 700))
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
 
