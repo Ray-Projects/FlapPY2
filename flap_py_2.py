@@ -83,11 +83,12 @@ def update_sprites(type):
         skies.update()
         skies.draw(screen)
     if type == 1:
-        bases.update()
-        bases.draw(screen)
-    if type == 2:
         pipes.update()
         pipes.draw(screen)
+    if type == 2:
+        bases.update()
+        bases.draw(screen)
+
 
 # function loops
 def main():
