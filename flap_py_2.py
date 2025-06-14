@@ -72,6 +72,21 @@ class Bird(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(250, 200))
         self.mask = pygame.mask.from_surface(self.image)
 
+        self.acceleration = 0
+
+    def move(self):
+        global mode, gravity
+
+        self.acceleration += gravity
+        self.rect.y += self.acceleration
+
+        if self.rect.y < 224:
+            mode = "dead"
+
+
+    def update(self):
+        self.move()
+
 # functions
 def add_sprites():
     skies.add(Sky())
@@ -87,41 +102,16 @@ def add_pipe(x, y):
     pipes.add(Pipe(x, y - pipe_gap, 1))
     pipes.add(Pipe(x, y, -1))
 
-def update_sprites(type):
-    if type == "skies":
-        skies.update()
-        skies.draw(screen)
-    elif type == "bird":
-        bird.update()
-        bird.draw(screen)
-    elif type == "pipes":
-        pipes.update()
-        pipes.draw(screen)
-    elif type == "bases":
-        bases.update()
-        bases.draw(screen)
-
-
-
-
 # function loops
-def main():
-    update_sprites("skies")
-    update_sprites("bird")
-    update_sprites("pipes")
-    update_sprites("bases")
-
-def title():
-    update_sprites("skies")
-    update_sprites("bird")
-    update_sprites("pipes")
-    update_sprites("bases")
-
-def dead():
-    update_sprites("skies")
-    update_sprites("bird")
-    update_sprites("pipes")
-    update_sprites("bases")
+def update_sprites():
+    skies.update()
+    bird.update()
+    pipes.update()
+    bases.update()
+    skies.draw(screen)
+    bird.draw(screen)
+    pipes.draw(screen)
+    bases.draw(screen)
 
 # initiating variables
 pygame.init()
@@ -136,6 +126,7 @@ scaling = 2
 pipe_gap = 200
 frame_up_to_60 = 0
 important_coords = [576, 864, 1152, 1440]
+gravity = 0.25
 
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
@@ -153,12 +144,7 @@ while True:
             exit()
 
     # important functions / variables
-    if mode == "main":
-        main()
-    elif mode == "title":
-        title()
-    elif mode == "dead":
-        dead()
+    update_sprites()
 
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
