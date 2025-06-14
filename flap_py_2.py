@@ -69,7 +69,8 @@ class Bird(pygame.sprite.Sprite):
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
-
+        self.rect = self.image.get_rect(topleft=(150, 800))
+        self.mask = pygame.mask.from_surface(self.image)
 
 # functions
 def add_sprites():
