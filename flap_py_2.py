@@ -62,6 +62,14 @@ class Pipe(pygame.sprite.Sprite):
     def update(self):
         self.move()
 
+class Bird(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-midflap.png").convert_alpha()
+        tmp0 = self.image.width * scaling
+        tmp1 = self.image.height * scaling
+        self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+
 
 # functions
 def add_sprites():
@@ -79,36 +87,47 @@ def add_pipe(x, y):
     pipes.add(Pipe(x, y, -1))
 
 def update_sprites(type):
-    if type == 0:
+    if type == "skies":
         skies.update()
         skies.draw(screen)
-    elif type == 1:
+    elif type == "bird":
+        bird.update()
+        bird.draw(screen)
+    elif type == "pipes":
         pipes.update()
         pipes.draw(screen)
-    elif type == 2:
+    elif type == "bases":
         bases.update()
         bases.draw(screen)
 
 
+
+
 # function loops
 def main():
-    update_sprites(0)
-    update_sprites(1)
-    update_sprites(2)
+    update_sprites("skies")
+    update_sprites("bird")
+    update_sprites("pipes")
+    update_sprites("bases")
 
 def title():
-    update_sprites(0)
-    update_sprites(2)
+    update_sprites("skies")
+    update_sprites("bird")
+    update_sprites("pipes")
+    update_sprites("bases")
 
 def dead():
-    update_sprites(0)
-    update_sprites(1)
-    update_sprites(2)
+    update_sprites("skies")
+    update_sprites("bird")
+    update_sprites("pipes")
+    update_sprites("bases")
 
 # initiating variables
 pygame.init()
-screen = pygame.display.set_mode((576, 1024))
+pygame_icon = pygame.image.load('flappy-bird-assets-master/favicon.ico')
+pygame.display.set_icon(pygame_icon)
 pygame.display.set_caption('Flappy Bird')
+screen = pygame.display.set_mode((576, 1024))
 clock = pygame.time.Clock()
 
 # variables
@@ -120,6 +139,7 @@ important_coords = [576, 864, 1152, 1440]
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
 pipes = pygame.sprite.Group()
+bird = pygame.sprite.GroupSingle()
 add_sprites()
 
 # game loop
