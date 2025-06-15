@@ -56,7 +56,7 @@ class Pipe(pygame.sprite.Sprite):
         if not(self.rect.x <= -self.image.width):
             return
         if self.position == 1:
-            add_pipe(important_coords[1] -self.image.width, randint(300, 700))
+            add_pipe(important_coords[3] -self.image.width, randint(300, 700))
         self.kill()
 
     def update(self):
@@ -144,9 +144,9 @@ class Bird(pygame.sprite.Sprite):
 def add_sprites():
     skies.add(Sky())
     bird.add(Bird())
-    add_pipe(important_coords[1], randint(300, 700))
     add_pipe(important_coords[2], randint(300, 700))
-    add_pipe(important_coords[3], randint(300, 700))
+    add_pipe(important_coords[4], randint(300, 700))
+    add_pipe(important_coords[6], randint(300, 700))
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
 
@@ -177,11 +177,11 @@ clock = pygame.time.Clock()
 # variables
 scaling = 2
 frame_up_to_60 = 0
-important_coords = [576, 864, 1152, 1440, 1728]
+important_coords = [576, 768, 960, 1152, 1344, 1536, 1728]
 jump_down = False
 
 # config variables
-pipe_gap = 170
+pipe_gap = 180
 gravity = 0.4
 jump_height = 8
 max_fall_speed = 20
