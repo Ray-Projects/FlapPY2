@@ -83,15 +83,35 @@ class Bird(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
         self.acceleration = 0
+        self.falltime = 0
+
+        self.angle = 0
+
+    def input(self):
+        global jump_down, jump_height
+        keys = pygame.key.get_pressed()
+        mouse = pygame.mouse.get_pressed()
+        if keys[pygame.K_SPACE] or mouse[0]:
+            if not jump_down:
+                self.acceleration = - jump_height
+                self.angle = 20
+            jump_down = True
+        else:
+           jump_down = False
+
 
     def move(self):
-        global mode, gravity
+        global gravity, max_fall_speed
 
         self.acceleration += gravity
         self.rect.y += self.acceleration
 
-        if self.rect.y < 224:
-            mode = "dead"
+        if self.acceleration > max_fall_speed:
+            self.acceleration = max_fall_speed
+        if self.acceleration > 0:
+            self.falltime += 1
+        else:
+            self.falltime = 0
 
     def animate(self):
         self.index += 0.3
@@ -99,9 +119,26 @@ class Bird(pygame.sprite.Sprite):
             self.index = 0
         self.image = self.flap[int(self.index)]
 
+        if self.falltime > 20:
+            self.angle -= 3
+        if self.angle < -80:
+            self.angle = -80
+
+        # fix to when an image is rotated its dimensions are changed causing a bad looking effect if the rectangle isn't updated
+        self.image = pygame.transform.rotate(self.image, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
+    def collide(self):
+        global mode
+
+        if self.rect.y < 224:
+            mode = "dead"
+
     def update(self):
+        self.input()
         self.move()
         self.animate()
+        self.collide()
 
 # functions
 def add_sprites():
@@ -139,11 +176,17 @@ clock = pygame.time.Clock()
 
 # variables
 scaling = 2
-pipe_gap = 200
 frame_up_to_60 = 0
-important_coords = [576, 864, 1152, 1440]
-gravity = 0.25
+important_coords = [576, 864, 1152, 1440, 1728]
+jump_down = False
 
+# config variables
+pipe_gap = 170
+gravity = 0.4
+jump_height = 8
+max_fall_speed = 20
+
+# setup
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
 pipes = pygame.sprite.Group()
