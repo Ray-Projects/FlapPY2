@@ -12,7 +12,6 @@ class Sky(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
         self.rect = self.image.get_rect(topleft=(0, 0))
 
-
 class Base(pygame.sprite.Sprite):
     def __init__(self, x):
         pygame.sprite.Sprite.__init__(self)
@@ -88,32 +87,49 @@ class Bird(pygame.sprite.Sprite):
         self.angle = 0
 
     def input(self):
-        global jump_down, jump_height
+        global jump_down, jump_height, mode
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
-            if not jump_down:
+            if not jump_down and mode == "main":
                 self.acceleration = - jump_height
                 self.angle = 20
+
             jump_down = True
         else:
            jump_down = False
 
-
     def move(self):
-        global gravity, max_fall_speed
+        global gravity, max_fall_speed, mode
 
         self.acceleration += gravity
         self.rect.y += self.acceleration
 
+        if mode == "dead":
+            self.acceleration = 0
+            return
+
+        if mode == "title":
+            self.acceleration = 0
+            return
+
         if self.acceleration > max_fall_speed:
             self.acceleration = max_fall_speed
+
         if self.acceleration > 0:
             self.falltime += 1
         else:
             self.falltime = 0
 
     def animate(self):
+        global mode
+
+        if mode == "dead":
+            return
+
+        if mode == "title":
+            return
+
         self.index += 0.3
         if self.index >= len(self.flap):
             self.index = 0
@@ -121,6 +137,7 @@ class Bird(pygame.sprite.Sprite):
 
         if self.falltime > 20:
             self.angle -= 3
+
         if self.angle < -80:
             self.angle = -80
 
@@ -129,10 +146,12 @@ class Bird(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def collide(self):
-        global mode
+        global mode, bases, pipes
 
-        if self.rect.y < 224:
-            mode = "dead"
+        if pygame.sprite.spritecollide(self, bases, False, pygame.sprite.collide_rect):
+            self.mask = pygame.mask.from_surface(self.image)
+            if pygame.sprite.spritecollide(self, bases, False, pygame.sprite.collide_mask):
+                mode = "dead"
 
     def update(self):
         self.input()
@@ -143,28 +162,28 @@ class Bird(pygame.sprite.Sprite):
 # functions
 def add_sprites():
     skies.add(Sky())
-    bird.add(Bird())
     add_pipe(important_coords[2], randint(300, 700))
     add_pipe(important_coords[4], randint(300, 700))
     add_pipe(important_coords[6], randint(300, 700))
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
+    bird.add(Bird())
 
 def add_pipe(x, y):
     global pipes, pipe_gap
     pipes.add(Pipe(x, y - pipe_gap, 1))
     pipes.add(Pipe(x, y, -1))
 
-# function loops
+# loop functions
 def update_sprites():
     skies.update()
-    bird.update()
     pipes.update()
     bases.update()
+    bird.update()
     skies.draw(screen)
-    bird.draw(screen)
     pipes.draw(screen)
     bases.draw(screen)
+    bird.draw(screen)
 
 # initiating variables
 pygame.init()
