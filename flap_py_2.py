@@ -28,7 +28,10 @@ class Base(pygame.sprite.Sprite):
             self.rect.x = important_coords[0]
 
     def update(self):
-        self.move()
+        global mode
+
+        if mode != "dead":
+            self.move()
 
 class Pipe(pygame.sprite.Sprite):
     def __init__(self, x, y, position):
@@ -44,7 +47,6 @@ class Pipe(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(bottomleft=(x, y))
         elif self.position == -1:
             self.rect = self.image.get_rect(topleft=(x, y))
-
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
@@ -59,7 +61,10 @@ class Pipe(pygame.sprite.Sprite):
         self.kill()
 
     def update(self):
-        self.move()
+        global mode
+
+        if mode != "dead":
+            self.move()
 
 class Bird(pygame.sprite.Sprite):
     def __init__(self):
@@ -67,7 +72,6 @@ class Bird(pygame.sprite.Sprite):
         self.downflap = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-downflap.png").convert_alpha()
         self.midflap = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-midflap.png").convert_alpha()
         self.upflap = pygame.image.load("flappy-bird-assets-master/sprites/yellowbird-upflap.png").convert_alpha()
-
         # all the bird flapping images are the same width and height, so we don't have to get the size of every single one!
         tmp0 = self.downflap.width * scaling
         tmp1 = self.downflap.height * scaling
@@ -83,8 +87,9 @@ class Bird(pygame.sprite.Sprite):
 
         self.acceleration = 0
         self.falltime = 0
-
         self.angle = 0
+
+        self.touching_bottom = False
 
     def input(self):
         global jump_down, jump_height, mode
@@ -130,23 +135,30 @@ class Bird(pygame.sprite.Sprite):
     def dead(self):
         global frame_counter_0, frame_counter_1
 
-        if frame_counter_0 - frame_counter_1 > 20:
+        if self.angle < -90:
+            self.angle = -90
+        if frame_counter_0 - frame_counter_1 > 20 and not self.touching_bottom:
             self.acceleration += 1
             self.angle -= 3
         else:
             self.acceleration = 0
-        if self.angle < -90:
-            self.angle = -90
 
-        if self.rect.y > 1024 + self.rect.height:
-            self.rect.y = 1024 + self.rect.height
+        if self.rect.center[1] > 770:
+            self.rect.center = (self.rect.center[0], 800)
+            self.touching_bottom = True
+        else:
+            self.touching_bottom = False
+
+
 
     def collide(self):
         global mode, bases, pipes
 
-        if pygame.sprite.spritecollide(self, bases, False, pygame.sprite.collide_rect):
+        if self.rect.center[1] > 800:
+            mode = "dead"
+        if pygame.sprite.spritecollide(self, pipes, False, pygame.sprite.collide_rect):
             self.mask = pygame.mask.from_surface(self.image)
-            if pygame.sprite.spritecollide(self, bases, False, pygame.sprite.collide_mask):
+            if pygame.sprite.spritecollide(self, pipes, False, pygame.sprite.collide_mask):
                 mode = "dead"
 
     def update(self):
@@ -154,12 +166,12 @@ class Bird(pygame.sprite.Sprite):
 
         self.input()
         self.move()
-        self.animate()
+        self.collide()
         if mode == "main":
             self.main()
         elif mode == "dead":
             self.dead()
-        self.collide()
+        self.animate()
 
 # functions
 def add_sprites():
