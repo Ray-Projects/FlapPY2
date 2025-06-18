@@ -103,6 +103,8 @@ class Bird(pygame.sprite.Sprite):
 
         self.acceleration += gravity
         self.rect.y += self.acceleration
+        if self.rect.y < 0 - self.rect.height:
+            self.rect.y = 0 - self.rect.height
 
         if self.acceleration > max_fall_speed:
             self.acceleration = max_fall_speed
@@ -127,6 +129,7 @@ class Bird(pygame.sprite.Sprite):
 
     def dead(self):
         global frame_counter_0, frame_counter_1
+
         if frame_counter_0 - frame_counter_1 > 20:
             self.acceleration += 1
             self.angle -= 3
@@ -134,6 +137,9 @@ class Bird(pygame.sprite.Sprite):
             self.acceleration = 0
         if self.angle < -90:
             self.angle = -90
+
+        if self.rect.y > 1024 + self.rect.height:
+            self.rect.y = 1024 + self.rect.height
 
     def collide(self):
         global mode, bases, pipes
