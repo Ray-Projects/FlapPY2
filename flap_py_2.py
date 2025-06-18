@@ -132,7 +132,8 @@ class Bird(pygame.sprite.Sprite):
             self.angle -= 3
         else:
             self.acceleration = 0
-        return
+        if self.angle < -90:
+            self.angle = -90
 
     def collide(self):
         global mode, bases, pipes
