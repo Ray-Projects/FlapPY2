@@ -94,56 +94,45 @@ class Bird(pygame.sprite.Sprite):
             if not jump_down and mode == "main":
                 self.acceleration = - jump_height
                 self.angle = 20
-
             jump_down = True
         else:
            jump_down = False
 
     def move(self):
-        global gravity, max_fall_speed, mode
+        global gravity, max_fall_speed
 
         self.acceleration += gravity
         self.rect.y += self.acceleration
 
-        if mode == "dead":
-            self.acceleration = 0
-            return
-
-        if mode == "title":
-            self.acceleration = 0
-            return
-
         if self.acceleration > max_fall_speed:
             self.acceleration = max_fall_speed
-
         if self.acceleration > 0:
             self.falltime += 1
         else:
             self.falltime = 0
 
     def animate(self):
-        global mode
-
-        if mode == "dead":
-            return
-
-        if mode == "title":
-            return
-
-        self.index += 0.3
         if self.index >= len(self.flap):
             self.index = 0
         self.image = self.flap[int(self.index)]
-
-        if self.falltime > 20:
-            self.angle -= 3
-
-        if self.angle < -80:
-            self.angle = -80
-
-        # fix to when an image is rotated its dimensions are changed causing a bad looking effect if the rectangle isn't updated
         self.image = pygame.transform.rotate(self.image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
+
+    def main(self):
+        self.index += 0.3
+        if self.falltime > 20:
+            self.angle -= 3
+        if self.angle < -90:
+            self.angle = -90
+
+    def dead(self):
+        global frame_counter_0, frame_counter_1
+        if frame_counter_0 - frame_counter_1 > 20:
+            self.acceleration += 1
+            self.angle -= 3
+        else:
+            self.acceleration = 0
+        return
 
     def collide(self):
         global mode, bases, pipes
@@ -154,9 +143,15 @@ class Bird(pygame.sprite.Sprite):
                 mode = "dead"
 
     def update(self):
+        global mode
+
         self.input()
         self.move()
         self.animate()
+        if mode == "main":
+            self.main()
+        elif mode == "dead":
+            self.dead()
         self.collide()
 
 # functions
@@ -198,6 +193,8 @@ scaling = 2
 frame_up_to_60 = 0
 important_coords = [576, 768, 960, 1152, 1344, 1536, 1728]
 jump_down = False
+frame_counter_0 = 0
+frame_counter_1 = 0
 
 # config variables
 pipe_gap = 180
@@ -227,6 +224,9 @@ while True:
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
         frame_up_to_60 = 0
+    frame_counter_0 += 1
+    if mode == "main":
+        frame_counter_1 += 1
 
     pygame.display.flip()
     clock.tick(60)
