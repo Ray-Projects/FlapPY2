@@ -89,7 +89,7 @@ class Bird(pygame.sprite.Sprite):
         self.falltime = 0
         self.angle = 0
 
-        self.touching_bottom = False
+        self.touching_base = False
 
     def input(self):
         global jump_down, jump_height, mode
@@ -137,7 +137,7 @@ class Bird(pygame.sprite.Sprite):
 
         if self.angle < -90:
             self.angle = -90
-        if frame_counter_0 - frame_counter_1 > 20 and not self.touching_bottom:
+        if frame_counter_0 - frame_counter_1 > 20 and not self.touching_base:
             self.acceleration += 1
             self.angle -= 3
         else:
@@ -145,9 +145,9 @@ class Bird(pygame.sprite.Sprite):
 
         if self.rect.center[1] > 770:
             self.rect.center = (self.rect.center[0], 800)
-            self.touching_bottom = True
+            self.touching_base = True
         else:
-            self.touching_bottom = False
+            self.touching_base = False
 
 
 
