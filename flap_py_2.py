@@ -50,6 +50,9 @@ class Pipe(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
+        # moves pipe, and if off the left edge of the screen it goes to the spot of the farthest right pipe (in this case 768),
+        # plus the gap between the pipe (in this case 2 1/3's of 576). we also subtract image width to make up for the image subtraction from earlier,
+        # preventing the gap between pipes changing.
         global pipes
 
         self.rect.x -= 3
@@ -133,28 +136,27 @@ class Bird(pygame.sprite.Sprite):
             self.angle = -90
 
     def dead(self):
-        global frame_counter_0, frame_counter_1
+        global frame_counter, main_running_time
 
         if self.angle < -90:
             self.angle = -90
-        if frame_counter_0 - frame_counter_1 > 20 and not self.touching_base:
+
+        if frame_counter - main_running_time > 20 and not self.touching_base:
             self.acceleration += 1
             self.angle -= 3
         else:
             self.acceleration = 0
 
-        if self.rect.center[1] > 770:
-            self.rect.center = (self.rect.center[0], 800)
+        if self.rect.center[1] > 789:
+            self.rect.center = (self.rect.center[0], 790)
             self.touching_base = True
         else:
             self.touching_base = False
 
-
-
     def collide(self):
         global mode, bases, pipes
 
-        if self.rect.center[1] > 800:
+        if self.rect.center[1] > 790:
             mode = "dead"
         if pygame.sprite.spritecollide(self, pipes, False, pygame.sprite.collide_rect):
             self.mask = pygame.mask.from_surface(self.image)
@@ -192,12 +194,12 @@ def add_pipe(x, y):
 def update_sprites():
     skies.update()
     pipes.update()
-    bases.update()
     bird.update()
+    bases.update()
     skies.draw(screen)
     pipes.draw(screen)
-    bases.draw(screen)
     bird.draw(screen)
+    bases.draw(screen)
 
 # initiating variables
 pygame.init()
@@ -212,8 +214,8 @@ scaling = 2
 frame_up_to_60 = 0
 important_coords = [576, 768, 960, 1152, 1344, 1536, 1728]
 jump_down = False
-frame_counter_0 = 0
-frame_counter_1 = 0
+frame_counter = 0
+main_running_time = 0
 
 # config variables
 pipe_gap = 180
@@ -243,9 +245,9 @@ while True:
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
         frame_up_to_60 = 0
-    frame_counter_0 += 1
+    frame_counter += 1
     if mode == "main":
-        frame_counter_1 += 1
+        main_running_time += 1
 
     pygame.display.flip()
     clock.tick(60)
