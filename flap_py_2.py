@@ -129,21 +129,23 @@ class Bird(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def main(self):
+        global rotate_speed
+
         self.index += 0.3
         if self.falltime > 20:
-            self.angle -= 3
+            self.angle -= rotate_speed
         if self.angle < -90:
             self.angle = -90
 
     def dead(self):
-        global frame_counter, main_running_time
+        global frame_counter, main_running_time, rotate_speed
 
         if self.angle < -90:
             self.angle = -90
 
         if frame_counter - main_running_time > 20 and not self.touching_base:
             self.acceleration += 1
-            self.angle -= 3
+            self.angle -= rotate_speed
         else:
             self.acceleration = 0
 
@@ -222,6 +224,7 @@ pipe_gap = 180
 gravity = 0.4
 jump_height = 8
 max_fall_speed = 20
+rotate_speed = 4
 
 # setup
 skies = pygame.sprite.Group()
