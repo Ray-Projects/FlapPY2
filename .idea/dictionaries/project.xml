@@ -2,6 +2,9 @@
   <dictionary name="project">
     <words>
       <w>bottomright</w>
+      <w>downflap</w>
+      <w>midflap</w>
+      <w>upflap</w>
     </words>
   </dictionary>
 </component>
