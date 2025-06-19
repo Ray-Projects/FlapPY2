@@ -203,6 +203,16 @@ def update_sprites():
     bird.draw(screen)
     bases.draw(screen)
 
+def death_flash():
+    global mode, flash_index
+
+    if mode == "dead":
+        translucent = pygame.Surface((576, 1024))
+        translucent.set_alpha(255 - flash_index)
+        translucent.fill((223, 217, 150))
+        screen.blit(translucent, (0, 0))
+        flash_index += 12
+
 # initiating variables
 pygame.init()
 pygame_icon = pygame.image.load('flappy-bird-assets-master/favicon.ico')
@@ -210,16 +220,17 @@ pygame.display.set_icon(pygame_icon)
 pygame.display.set_caption('Flappy Bird')
 screen = pygame.display.set_mode((576, 1024))
 clock = pygame.time.Clock()
-
-# variables
-scaling = 2
-frame_up_to_60 = 0
 important_coords = [576, 768, 960, 1152, 1344, 1536, 1728]
+
+# default variables
+frame_up_to_60 = 0
 jump_down = False
 frame_counter = 0
 main_running_time = 0
+flash_index = 0
 
 # config variables
+scaling = 2
 pipe_gap = 180
 gravity = 0.4
 jump_height = 8
@@ -244,6 +255,7 @@ while True:
 
     # important functions / variables
     update_sprites()
+    death_flash()
 
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
