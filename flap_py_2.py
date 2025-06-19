@@ -1,3 +1,5 @@
+from enum import pickle_by_enum_name
+
 import pygame
 from sys import exit
 from random import randint
@@ -36,12 +38,12 @@ class Base(pygame.sprite.Sprite):
 class Pipe(pygame.sprite.Sprite):
     def __init__(self, x, y, position):
         pygame.sprite.Sprite.__init__(self)
+        self.position = position
         self.image = pygame.image.load("flappy-bird-assets-master/sprites/pipe-green.png").convert_alpha()
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
 
-        self.position = position
         if self.position == 1:
             self.image = pygame.transform.flip(self.image, False, True)
             self.rect = self.image.get_rect(bottomleft=(x, y))
@@ -62,6 +64,29 @@ class Pipe(pygame.sprite.Sprite):
         if self.position == 1:
             add_pipe(important_coords[3] -self.image.width, randint(300, 700))
         self.kill()
+
+    def update(self):
+        global mode
+
+        if mode != "dead":
+            self.move()
+
+class PipeGap(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((52 * scaling, pipe_distance))
+        self.image.set_alpha(100)
+        self.image.fill((255, 0, 0))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def move(self):
+        global pipes
+
+        self.rect.x -= 3
+
+        if self.rect.x <= -self.image.width:
+            self.kill()
 
     def update(self):
         global mode
@@ -156,7 +181,7 @@ class Bird(pygame.sprite.Sprite):
             self.touching_base = False
 
     def collide(self):
-        global mode, bases, pipes
+        global mode, score, touching_pipe_gaps, bases, pipes, pipe_gaps
 
         if self.rect.center[1] > 790:
             mode = "dead"
@@ -164,6 +189,13 @@ class Bird(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             if pygame.sprite.spritecollide(self, pipes, False, pygame.sprite.collide_mask):
                 mode = "dead"
+
+        if pygame.sprite.spritecollide(self, pipe_gaps, False, pygame.sprite.collide_rect):
+            if not touching_pipe_gaps:
+                score += 1
+            touching_pipe_gaps = True
+        else:
+            touching_pipe_gaps = False
 
     def update(self):
         global mode
@@ -188,20 +220,29 @@ def add_sprites():
     bird.add(Bird())
 
 def add_pipe(x, y):
-    global pipes, pipe_gap
-    pipes.add(Pipe(x, y - pipe_gap, 1))
+    global pipes, pipe_distance, pipe_gaps
+
+    pipes.add(Pipe(x, y - pipe_distance, 1))
+    pipe_gaps.add(PipeGap(x, y - pipe_distance))
     pipes.add(Pipe(x, y, -1))
 
 # loop functions
 def update_sprites():
     skies.update()
     pipes.update()
+    pipe_gaps.update()
     bird.update()
     bases.update()
+
     skies.draw(screen)
     pipes.draw(screen)
+    pipe_gaps.draw(screen)
     bird.draw(screen)
     bases.draw(screen)
+
+def update_score():
+    global score
+    print(f"CURRENT SCORE: {score}")
 
 def death_flash():
     global mode, flash_index
@@ -228,10 +269,13 @@ jump_down = False
 frame_counter = 0
 main_running_time = 0
 flash_index = 0
+score = 0
+old_score = -1
+touching_pipe_gaps = False
 
 # config variables
 scaling = 2
-pipe_gap = 180
+pipe_distance = 180
 gravity = 0.4
 jump_height = 8
 max_fall_speed = 20
@@ -241,6 +285,7 @@ rotate_speed = 4
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
 pipes = pygame.sprite.Group()
+pipe_gaps = pygame.sprite.Group()
 bird = pygame.sprite.GroupSingle()
 add_sprites()
 
@@ -255,6 +300,10 @@ while True:
 
     # important functions / variables
     update_sprites()
+    if score != old_score:
+        old_score = score
+        update_score()
+
     death_flash()
 
     frame_up_to_60 += 1
