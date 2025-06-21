@@ -144,8 +144,13 @@ class Bird(pygame.sprite.Sprite):
         if self.rect.y < 0 - self.rect.height:
             self.rect.y = 0 - self.rect.height
 
-        if self.acceleration > max_fall_speed:
-            self.acceleration = max_fall_speed
+        if mode == "main":
+            if self.acceleration > max_fall_speed:
+                self.acceleration = max_fall_speed
+        elif mode == "dead":
+            if self.acceleration > dead_max_fall_speed:
+                self.acceleration = dead_max_fall_speed
+
         if self.acceleration > 0:
             self.falltime += 1
         else:
@@ -219,9 +224,9 @@ def add_sprites():
     add_pipe(important_coords[2], random.randint(300, 700))
     add_pipe(important_coords[4], random.randint(300, 700))
     add_pipe(important_coords[6], random.randint(300, 700))
+    bird.add(Bird())
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
-    bird.add(Bird())
 
 def add_pipe(x, y):
     global pipes, pipe_distance, pipe_gaps
@@ -290,7 +295,7 @@ def game_over():
         game_over = pygame.transform.scale(game_over, (tmp0, tmp1))
         game_over.set_alpha(game_over_opacity_index - 200)
         screen.blit(game_over, (288 - (game_over.width / 2), 100 + game_over_index))
-        game_over_index += 7
+        game_over_index += 4
         game_over_opacity_index += 20
         if game_over_index > 100:
             game_over_index = 100
@@ -324,6 +329,7 @@ pipe_distance = 180
 gravity = 0.8
 jump_height = 12
 max_fall_speed = 10
+dead_max_fall_speed = 20
 rotate_speed = 8
 
 # setup
