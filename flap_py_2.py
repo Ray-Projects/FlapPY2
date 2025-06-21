@@ -119,6 +119,7 @@ class Bird(pygame.sprite.Sprite):
 
     def input(self):
         global jump_down, jump_height, mode
+
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
@@ -126,12 +127,6 @@ class Bird(pygame.sprite.Sprite):
                 if mode == "main":
                     self.acceleration = - jump_height
                     self.angle = 20
-                elif mode == "dead" and frame_counter - main_running_time > 60:
-                    print("\n-----------------------\n")
-                    mode = "main"
-                    delete_sprites()
-                    set_variables_to_default()
-                    add_sprites()
             jump_down = True
         else:
             jump_down = False
@@ -218,6 +213,72 @@ class Bird(pygame.sprite.Sprite):
             self.dead()
         self.animate()
 
+class GameOver(pygame.sprite.Sprite):
+    def __init__(self, type):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.type = type
+        if self.type == "gameover":
+            self.image = pygame.image.load("flappy-bird-assets-master/sprites/gameover.png")
+            tmp0 = self.image.width * scaling
+            tmp1 = self.image.height * scaling
+            self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+            self.starting_y = 0
+            self.rect = self.image.get_rect(midtop=(288, self.starting_y))
+
+        elif self.type == "restart":
+            self.image = pygame.image.load("flappy-bird-assets-master/sprites/restart.png")
+            tmp0 = self.image.width * scaling
+            tmp1 = self.image.height * scaling
+            self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+            self.starting_y = 400
+            self.rect = self.image.get_rect(midtop=(288, self.starting_y))
+
+        self.image.set_alpha(0)
+        self.most_recent_event = 0
+
+    def input(self, events):
+        global mode, jump_down, game_over_index
+
+        if self.type == "restart":
+            for event in events:
+                if game_over_index > 50 and self.rect.collidepoint(pygame.mouse.get_pos()):
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        self.most_recent_event = "buttonclicked"
+
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    if self.most_recent_event == "buttonclicked":
+                        self.most_recent_event = "buttonreleased"
+                        print("\n-------------------------\n")
+                        mode = "main"
+                        delete_sprites()
+                        set_variables_to_default()
+                        add_sprites()
+                        jump_down = True  # stops jumping at the start of the game
+
+    def animate(self):
+        global game_over_index, game_over_opacity_index
+
+        self.image.set_alpha(game_over_opacity_index)
+        self.rect.y = self.starting_y + game_over_index
+
+        game_over_index += 4
+        if game_over_index > 100:
+            game_over_index = 100
+
+        game_over_opacity_index += 20
+        if game_over_opacity_index > 255:
+            game_over_opacity_index = 255
+
+        if self.most_recent_event == "buttonclicked":
+            self.rect.y += 10
+
+    def update(self, events):
+        if mode == "dead":
+            self.input(events)
+            self.animate()
+
+
 # functions
 def add_sprites():
     skies.add(Sky())
@@ -227,6 +288,8 @@ def add_sprites():
     bird.add(Bird())
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
+    game_over.add(GameOver("gameover"))
+    game_over.add(GameOver("restart"))
 
 def add_pipe(x, y):
     global pipes, pipe_distance, pipe_gaps
@@ -241,6 +304,7 @@ def delete_sprites():
     pipe_gaps.empty()
     bases.empty()
     bird.remove(Bird())
+    game_over.empty()
 
 def set_variables_to_default():
     global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, game_over_opacity_index, score, old_score, touching_pipe_gaps
@@ -251,7 +315,7 @@ def set_variables_to_default():
     main_running_time = 0
     flash_index = 0
     game_over_index = 0
-    game_over_opacity_index = 0
+    game_over_opacity_index = -200
     score = 0
     old_score = -1
     touching_pipe_gaps = False
@@ -267,17 +331,18 @@ def update_sprites():
     pipe_gaps.update()
     bird.update()
     bases.update()
+    game_over.update(events)
 
     skies.draw(screen)
     pipes.draw(screen)
     pipe_gaps.draw(screen)
     bird.draw(screen)
     bases.draw(screen)
+    game_over.draw(screen)
     death_flash()
-    game_over()
 
 def death_flash():
-    global mode, flash_index
+    global flash_index, mode
 
     if mode == "dead":
         translucent = pygame.Surface((576, 1024))
@@ -285,22 +350,6 @@ def death_flash():
         translucent.fill((223, 217, 150))
         screen.blit(translucent, (0, 0))
         flash_index += 12
-
-def game_over():
-    global game_over_index, game_over_opacity_index
-    if mode == "dead":
-        game_over = pygame.image.load("flappy-bird-assets-master/sprites/gameover.png")
-        tmp0 = game_over.width * scaling
-        tmp1 = game_over.height * scaling
-        game_over = pygame.transform.scale(game_over, (tmp0, tmp1))
-        game_over.set_alpha(game_over_opacity_index - 200)
-        screen.blit(game_over, (288 - (game_over.width / 2), 100 + game_over_index))
-        game_over_index += 4
-        game_over_opacity_index += 20
-        if game_over_index > 100:
-            game_over_index = 100
-        if game_over_opacity_index > 455:
-            game_over_opacity_index = 455
 
 # initiating variables
 pygame.init()
@@ -311,18 +360,6 @@ screen = pygame.display.set_mode((576, 1024))
 clock = pygame.time.Clock()
 important_coords = [576, 768, 960, 1152, 1344, 1536, 1728]
 
-# default variables
-frame_up_to_60 = 0
-jump_down = False
-frame_counter = 0
-main_running_time = 0
-flash_index = 0
-game_over_index = 0
-game_over_opacity_index = 0
-score = 0
-old_score = -1
-touching_pipe_gaps = False
-
 # config variables
 scaling = 2
 pipe_distance = 180
@@ -332,19 +369,33 @@ max_fall_speed = 10
 dead_max_fall_speed = 20
 rotate_speed = 8
 
+# default variables
+frame_up_to_60 = 0
+jump_down = False
+frame_counter = 0
+main_running_time = 0
+flash_index = 0
+game_over_index = 0
+game_over_opacity_index = -200
+score = 0
+old_score = -1
+touching_pipe_gaps = False
+
 # setup
 skies = pygame.sprite.Group()
 bases = pygame.sprite.Group()
 pipes = pygame.sprite.Group()
 pipe_gaps = pygame.sprite.Group()
 bird = pygame.sprite.GroupSingle()
+game_over = pygame.sprite.Group()
 add_sprites()
 
 # game loop
 mode = "main"
 while True:
     # check for events
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
