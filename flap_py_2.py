@@ -238,14 +238,15 @@ def delete_sprites():
     bird.remove(Bird())
 
 def set_variables_to_default():
-    global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, score, old_score, touching_pipe_gaps
+    global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, game_over_opacity_index, score, old_score, touching_pipe_gaps
 
     frame_up_to_60 = 0
     jump_down = False
     frame_counter = 0
     main_running_time = 0
     flash_index = 0
-    game_over_index = 1
+    game_over_index = 0
+    game_over_opacity_index = 0
     score = 0
     old_score = -1
     touching_pipe_gaps = False
@@ -281,17 +282,20 @@ def death_flash():
         flash_index += 12
 
 def game_over():
-    global game_over_index
+    global game_over_index, game_over_opacity_index
     if mode == "dead":
         game_over = pygame.image.load("flappy-bird-assets-master/sprites/gameover.png")
         tmp0 = game_over.width * scaling
         tmp1 = game_over.height * scaling
         game_over = pygame.transform.scale(game_over, (tmp0, tmp1))
-        game_over.set_alpha(game_over_index * 2.55)
+        game_over.set_alpha(game_over_opacity_index - 200)
         screen.blit(game_over, (288 - (game_over.width / 2), 100 + game_over_index))
         game_over_index += 7
+        game_over_opacity_index += 20
         if game_over_index > 100:
             game_over_index = 100
+        if game_over_opacity_index > 455:
+            game_over_opacity_index = 455
 
 # initiating variables
 pygame.init()
@@ -308,7 +312,8 @@ jump_down = False
 frame_counter = 0
 main_running_time = 0
 flash_index = 0
-game_over_index = 1
+game_over_index = 0
+game_over_opacity_index = 0
 score = 0
 old_score = -1
 touching_pipe_gaps = False
