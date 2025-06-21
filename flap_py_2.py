@@ -1,8 +1,6 @@
-from enum import pickle_by_enum_name
-
 import pygame
-from sys import exit
-from random import randint
+import random
+import sys
 
 # sprites
 class Sky(pygame.sprite.Sprite):
@@ -62,7 +60,7 @@ class Pipe(pygame.sprite.Sprite):
         if not(self.rect.x <= -self.image.width):
             return
         if self.position == 1:
-            add_pipe(important_coords[3] -self.image.width, randint(300, 700))
+            add_pipe(important_coords[3] -self.image.width, random.randint(300, 700))
         self.kill()
 
     def update(self):
@@ -124,12 +122,19 @@ class Bird(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
-            if not jump_down and mode == "main":
-                self.acceleration = - jump_height
-                self.angle = 20
+            if not jump_down:
+                if mode == "main":
+                    self.acceleration = - jump_height
+                    self.angle = 20
+                elif mode == "dead" and frame_counter - main_running_time > 60:
+                    print("\n-----------------------\n")
+                    mode = "main"
+                    delete_sprites()
+                    set_variables_to_default()
+                    add_sprites()
             jump_down = True
         else:
-           jump_down = False
+            jump_down = False
 
     def move(self):
         global gravity, max_fall_speed
@@ -165,14 +170,13 @@ class Bird(pygame.sprite.Sprite):
     def dead(self):
         global frame_counter, main_running_time, rotate_speed
 
-        if self.angle < -90:
-            self.angle = -90
-
         if frame_counter - main_running_time > 20 and not self.touching_base:
             self.acceleration += 1
             self.angle -= rotate_speed
         else:
             self.acceleration = 0
+        if self.angle < -90:
+            self.angle = -90
 
         if self.rect.center[1] > 789:
             self.rect.center = (self.rect.center[0], 790)
@@ -212,9 +216,9 @@ class Bird(pygame.sprite.Sprite):
 # functions
 def add_sprites():
     skies.add(Sky())
-    add_pipe(important_coords[2], randint(300, 700))
-    add_pipe(important_coords[4], randint(300, 700))
-    add_pipe(important_coords[6], randint(300, 700))
+    add_pipe(important_coords[2], random.randint(300, 700))
+    add_pipe(important_coords[4], random.randint(300, 700))
+    add_pipe(important_coords[6], random.randint(300, 700))
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
     bird.add(Bird())
@@ -225,6 +229,30 @@ def add_pipe(x, y):
     pipes.add(Pipe(x, y - pipe_distance, 1))
     pipe_gaps.add(PipeGap(x, y - pipe_distance))
     pipes.add(Pipe(x, y, -1))
+
+def delete_sprites():
+    skies.empty()
+    pipes.empty()
+    pipe_gaps.empty()
+    bases.empty()
+    bird.remove(Bird())
+
+def set_variables_to_default():
+    global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, score, old_score, touching_pipe_gaps
+
+    frame_up_to_60 = 0
+    jump_down = False
+    frame_counter = 0
+    main_running_time = 0
+    flash_index = 0
+    game_over_index = 1
+    score = 0
+    old_score = -1
+    touching_pipe_gaps = False
+
+def update_score():
+    global score
+    print(f"CURRENT SCORE: {score}")
 
 # loop functions
 def update_sprites():
@@ -239,10 +267,8 @@ def update_sprites():
     pipe_gaps.draw(screen)
     bird.draw(screen)
     bases.draw(screen)
-
-def update_score():
-    global score
-    print(f"CURRENT SCORE: {score}")
+    death_flash()
+    game_over()
 
 def death_flash():
     global mode, flash_index
@@ -253,6 +279,19 @@ def death_flash():
         translucent.fill((223, 217, 150))
         screen.blit(translucent, (0, 0))
         flash_index += 12
+
+def game_over():
+    global game_over_index
+    if mode == "dead":
+        game_over = pygame.image.load("flappy-bird-assets-master/sprites/gameover.png")
+        tmp0 = game_over.width * scaling
+        tmp1 = game_over.height * scaling
+        game_over = pygame.transform.scale(game_over, (tmp0, tmp1))
+        game_over.set_alpha(game_over_index * 2.55)
+        screen.blit(game_over, (288 - (game_over.width / 2), 100 + game_over_index))
+        game_over_index += 7
+        if game_over_index > 100:
+            game_over_index = 100
 
 # initiating variables
 pygame.init()
@@ -269,6 +308,7 @@ jump_down = False
 frame_counter = 0
 main_running_time = 0
 flash_index = 0
+game_over_index = 1
 score = 0
 old_score = -1
 touching_pipe_gaps = False
@@ -276,10 +316,10 @@ touching_pipe_gaps = False
 # config variables
 scaling = 2
 pipe_distance = 180
-gravity = 0.4
-jump_height = 8
-max_fall_speed = 20
-rotate_speed = 4
+gravity = 0.8
+jump_height = 12
+max_fall_speed = 10
+rotate_speed = 8
 
 # setup
 skies = pygame.sprite.Group()
@@ -296,15 +336,13 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            exit()
+            sys.exit()
 
     # important functions / variables
     update_sprites()
     if score != old_score:
         old_score = score
         update_score()
-
-    death_flash()
 
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
