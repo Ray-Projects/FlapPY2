@@ -214,20 +214,20 @@ class Bird(pygame.sprite.Sprite):
         self.animate()
 
 class Score(pygame.sprite.Sprite):
-    def __init__(self, number, digit_place, x, y, centered, leading_zeros):
+    def __init__(self, number, digit_place):
         pygame.sprite.Sprite.__init__(self)
 
-        self.number = str(number)
         self.digit_place = digit_place
-        self.original_x = x
-        self.original_y = y
-        self.centered = centered
-        self.leading_zeros_toggle = leading_zeros
+        self.original_x = 288
+        self.original_y = 50
+        self.centered = True
+        self.leading_zeros_toggle = False
         self.leading_zeros = []
+        self.number = self.convert(str(number))
         i = 0
         while i < text_max_length + 1:
             i += 1
-            self.leading_zeros.append(0)
+            self.leading_zeros.append(False)
 
         self.zero = pygame.image.load("flappy-bird-assets-master/sprites/0.png")
         self.one = pygame.image.load("flappy-bird-assets-master/sprites/1.png")
@@ -255,10 +255,10 @@ class Score(pygame.sprite.Sprite):
         self.one = pygame.transform.scale(self.one, (tmp0, tmp1))
 
         self.value = [self.zero, self.one, self.two, self.three, self.four, self.five, self.six, self.seven, self.eight, self.nine]
-        self.index = int(str(self.number)[self.digit_place])
+        self.index = 0
         self.image = self.value[self.index]
 
-        self.rect = self.image.get_rect(topleft=(x, y))
+        self.rect = self.image.get_rect(topleft=(0, 0))
 
     def convert(self, number):
         new_number = number[::-1]
@@ -266,18 +266,18 @@ class Score(pygame.sprite.Sprite):
         i = 0
         while i < text_max_length + 1:
             i += 1
-            self.leading_zeros.append(0)
+            self.leading_zeros.append(False)
 
         if len(number) < text_max_length + 1:
             i = 0
             while i < ((text_max_length + 1) - len(number)):
                 i += 1
-                if not text_leading_zeros:
-                    self.leading_zeros[i - 1] = 1
+                if not self.leading_zeros_toggle:
+                    self.leading_zeros[i - 1] = True
                 new_number = new_number + "0"
 
         new_number = new_number[::-1]
-        self.leading_zeros[text_max_length] = 0
+        self.leading_zeros[text_max_length] = False
 
         return new_number
 
@@ -288,7 +288,7 @@ class Score(pygame.sprite.Sprite):
         self.index = int(self.number[self.digit_place])
         self.image = self.value[self.index]
 
-        if self.leading_zeros[self.digit_place] == 0:
+        if not self.leading_zeros[self.digit_place]:
             self.image.set_alpha(255)
         else:
             self.image.set_alpha(0)
@@ -308,9 +308,20 @@ class Score(pygame.sprite.Sprite):
                 new_x = self.original_x - ((self.rect.x - self.original_x) / 2)
                 self.render(new_x, self.original_y, False)
 
+    def dead(self):
+        global game_over_index, game_over_opacity_index
+
+        if not self.leading_zeros[self.digit_place]:
+            self.image.set_alpha(game_over_opacity_index)
+        self.rect.y = 150 + game_over_index
+
     def update(self, number):
+        global mode
+
         self.number = self.convert(str(number))
         self.render(self.original_x, self.original_y, self.centered)
+        if mode == "dead":
+            self.dead()
 
 class GameOver(pygame.sprite.Sprite):
     def __init__(self, type):
@@ -386,12 +397,12 @@ def add_sprites():
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
 
-    tmp0 = 12345
-    score.add(Score(tmp0, 0, text_x, text_y, text_centered, text_leading_zeros))
-    score.add(Score(tmp0, 1, text_x, text_y, text_centered, text_leading_zeros))
-    score.add(Score(tmp0, 2, text_x, text_y, text_centered, text_leading_zeros))
-    score.add(Score(tmp0, 3, text_x, text_y, text_centered, text_leading_zeros))
-    score.add(Score(tmp0, 4, text_x, text_y, text_centered, text_leading_zeros))
+    tmp0 = 0
+    score.add(Score(tmp0, 0))
+    score.add(Score(tmp0, 1))
+    score.add(Score(tmp0, 2))
+    score.add(Score(tmp0, 3))
+    score.add(Score(tmp0, 4))
 
     game_over.add(GameOver("gameover"))
     game_over.add(GameOver("restart"))
@@ -412,18 +423,19 @@ def delete_sprites():
     game_over.empty()
 
 def set_variables_to_default():
-    global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, game_over_opacity_index, score_val, old_score_val, touching_pipe_gaps
+    global frame_up_to_60, jump_down, frame_counter, main_running_time, touching_pipe_gaps, \
+        flash_index, game_over_index, game_over_opacity_index, \
+        score_val
 
     frame_up_to_60 = 0
     jump_down = False
     frame_counter = 0
     main_running_time = 0
+    touching_pipe_gaps = False
     flash_index = 0
     game_over_index = 0
     game_over_opacity_index = -200
     score_val = 0
-    old_score_val = -1
-    touching_pipe_gaps = False
 
 # loop functions
 def update_sprites():
@@ -471,12 +483,7 @@ jump_height = 12
 max_fall_speed = 10
 dead_max_fall_speed = 20
 rotate_speed = 8
-
 text_max_length = 4
-text_centered = True
-text_x = 288
-text_y = 50
-text_leading_zeros = False
 
 # default variables
 frame_up_to_60 = 0
@@ -487,7 +494,6 @@ flash_index = 0
 game_over_index = 0
 game_over_opacity_index = -200
 score_val = 0
-old_score_val = -1
 touching_pipe_gaps = False
 
 # setup
@@ -519,6 +525,8 @@ while True:
     frame_counter += 1
     if mode == "main":
         main_running_time += 1
+
+    score_val += 1
 
     pygame.display.flip()
     clock.tick(60)
