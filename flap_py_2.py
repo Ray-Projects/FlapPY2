@@ -222,7 +222,12 @@ class Score(pygame.sprite.Sprite):
         self.original_x = x
         self.original_y = y
         self.centered = centered
-        self.leading_zeros = leading_zeros
+        self.leading_zeros_toggle = leading_zeros
+        self.leading_zeros = []
+        i = 0
+        while i < text_max_length + 1:
+            i += 1
+            self.leading_zeros.append(0)
 
         self.zero = pygame.image.load("flappy-bird-assets-master/sprites/0.png")
         self.one = pygame.image.load("flappy-bird-assets-master/sprites/1.png")
@@ -257,12 +262,22 @@ class Score(pygame.sprite.Sprite):
 
     def convert(self, number):
         new_number = number[::-1]
-        if len(number) - 1 < text_max_length:
+        self.leading_zeros = []
+        i = 0
+        while i < text_max_length + 1:
+            i += 1
+            self.leading_zeros.append(0)
+
+        if len(number) < text_max_length + 1:
             i = 0
-            while i < (text_max_length - (len(number) - 1)):
+            while i < ((text_max_length + 1) - len(number)):
                 i += 1
+                if not text_leading_zeros:
+                    self.leading_zeros[i - 1] = 1
                 new_number = new_number + "0"
+
         new_number = new_number[::-1]
+        self.leading_zeros[text_max_length] = 0
 
         return new_number
 
@@ -270,19 +285,24 @@ class Score(pygame.sprite.Sprite):
         global text_max_length
 
         self.rect.x, self.rect.y = orig_x, orig_y
-        print(self.number, self.digit_place)
         self.index = int(self.number[self.digit_place])
         self.image = self.value[self.index]
+
+        if self.leading_zeros[self.digit_place] == 0:
+            self.image.set_alpha(255)
+        else:
+            self.image.set_alpha(0)
 
         for index, index_value in enumerate(self.number):
             if index == self.digit_place:
                 if not centered:
                     break
 
-            if index_value == "1":
-                self.rect.x += self.one.width + 4
-            else:
-                self.rect.x += self.zero.width + 4
+            if self.leading_zeros[index] == 0:
+                if index_value == "1":
+                    self.rect.x += self.one.width + 4
+                else:
+                    self.rect.x += self.zero.width + 4
 
             if index == text_max_length:
                 new_x = self.original_x - ((self.rect.x - self.original_x) / 2)
@@ -290,7 +310,6 @@ class Score(pygame.sprite.Sprite):
 
     def update(self, number):
         self.number = self.convert(str(number))
-        self.convert(self.number)
         self.render(self.original_x, self.original_y, self.centered)
 
 class GameOver(pygame.sprite.Sprite):
@@ -329,7 +348,6 @@ class GameOver(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.most_recent_event == "buttonclicked":
                         self.most_recent_event = "buttonreleased"
-                        print("\n-------------------------\n")
                         mode = "main"
                         delete_sprites()
                         set_variables_to_default()
@@ -502,7 +520,7 @@ while True:
     if mode == "main":
         main_running_time += 1
 
-    score_val += 100
+    score_val += 1
 
     pygame.display.flip()
     clock.tick(60)
