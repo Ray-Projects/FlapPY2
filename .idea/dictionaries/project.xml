@@ -2,6 +2,8 @@
   <dictionary name="project">
     <words>
       <w>bottomright</w>
+      <w>buttonclicked</w>
+      <w>buttonreleased</w>
       <w>downflap</w>
       <w>gameover</w>
       <w>midflap</w>

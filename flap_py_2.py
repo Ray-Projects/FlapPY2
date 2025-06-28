@@ -185,7 +185,7 @@ class Bird(pygame.sprite.Sprite):
             self.touching_base = False
 
     def collide(self):
-        global mode, score, touching_pipe_gaps, bases, pipes, pipe_gaps
+        global mode, score_val, touching_pipe_gaps, bases, pipes, pipe_gaps
 
         if self.rect.center[1] > 790:
             mode = "dead"
@@ -196,7 +196,7 @@ class Bird(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, pipe_gaps, False, pygame.sprite.collide_rect):
             if not touching_pipe_gaps:
-                score += 1
+                score_val += 1
             touching_pipe_gaps = True
         else:
             touching_pipe_gaps = False
@@ -212,6 +212,71 @@ class Bird(pygame.sprite.Sprite):
         elif mode == "dead":
             self.dead()
         self.animate()
+
+class Score(pygame.sprite.Sprite):
+    def __init__(self, number, digit_place, x, y, centered):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.number = number
+        self.digit_place = digit_place
+        self.original_x = x
+        self.original_y = y
+        self.centered = centered
+
+        self.zero = pygame.image.load("flappy-bird-assets-master/sprites/0.png")
+        self.one = pygame.image.load("flappy-bird-assets-master/sprites/1.png")
+        self.two = pygame.image.load("flappy-bird-assets-master/sprites/2.png")
+        self.three = pygame.image.load("flappy-bird-assets-master/sprites/3.png")
+        self.four = pygame.image.load("flappy-bird-assets-master/sprites/4.png")
+        self.five = pygame.image.load("flappy-bird-assets-master/sprites/5.png")
+        self.six = pygame.image.load("flappy-bird-assets-master/sprites/6.png")
+        self.seven = pygame.image.load("flappy-bird-assets-master/sprites/7.png")
+        self.eight = pygame.image.load("flappy-bird-assets-master/sprites/8.png")
+        self.nine = pygame.image.load("flappy-bird-assets-master/sprites/9.png")
+
+        tmp0 = self.zero.width * scaling # all of them except for 1 are 24 pixels wide, 1 is 16 wide.
+        tmp1 = self.zero.height * scaling # all of them are 36 pixels tall
+        self.zero = pygame.transform.scale(self.zero, (tmp0, tmp1))
+        self.two = pygame.transform.scale(self.two, (tmp0, tmp1))
+        self.three = pygame.transform.scale(self.three, (tmp0, tmp1))
+        self.four = pygame.transform.scale(self.four, (tmp0, tmp1))
+        self.five = pygame.transform.scale(self.five, (tmp0, tmp1))
+        self.six = pygame.transform.scale(self.six, (tmp0, tmp1))
+        self.seven = pygame.transform.scale(self.seven, (tmp0, tmp1))
+        self.eight = pygame.transform.scale(self.eight, (tmp0, tmp1))
+        self.nine = pygame.transform.scale(self.nine, (tmp0, tmp1))
+        tmp0 = self.one.width * scaling # making sure to change tmp0 before scaling one
+        self.one = pygame.transform.scale(self.one, (tmp0, tmp1))
+
+        self.value = [self.zero, self.one, self.two, self.three, self.four, self.five, self.six, self.seven, self.eight, self.nine]
+        self.index = int(str(self.number)[self.digit_place])
+        self.image = self.value[self.index]
+
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def render(self, orig_x, orig_y, centered):
+        self.rect.x, self.rect.y = orig_x, orig_y
+        self.index = int(str(self.number)[self.digit_place])
+        self.image = self.value[self.index]
+
+        for index, index_value in enumerate(str(self.number)):
+            if index == self.digit_place:
+                if not centered:
+                    break
+
+            if index_value == "1":
+                self.rect.x += self.one.width + 4
+            else:
+                self.rect.x += self.zero.width + 4
+
+            if index == 4:
+                self.rect.x += self.image.width
+                new_x = self.original_x - ((self.rect.x - self.original_x) / 2)
+                self.render(new_x, self.original_y, False)
+
+    def update(self, number):
+        self.number = number
+        self.render(self.original_x, self.original_y, self.centered)
 
 class GameOver(pygame.sprite.Sprite):
     def __init__(self, type):
@@ -278,7 +343,6 @@ class GameOver(pygame.sprite.Sprite):
             self.input(events)
             self.animate()
 
-
 # functions
 def add_sprites():
     skies.add(Sky())
@@ -288,6 +352,17 @@ def add_sprites():
     bird.add(Bird())
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
+
+    tmp0 = 12345
+    tmp1 = 288
+    tmp2 = 0
+    tmp3 = True
+    score.add(Score(tmp0, 0, tmp1, tmp2, tmp3))
+    score.add(Score(tmp0, 1, tmp1, tmp2, tmp3))
+    score.add(Score(tmp0, 2, tmp1, tmp2, tmp3))
+    score.add(Score(tmp0, 3, tmp1, tmp2, tmp3))
+    score.add(Score(tmp0, 4, tmp1, tmp2, tmp3))
+
     game_over.add(GameOver("gameover"))
     game_over.add(GameOver("restart"))
 
@@ -307,7 +382,7 @@ def delete_sprites():
     game_over.empty()
 
 def set_variables_to_default():
-    global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, game_over_opacity_index, score, old_score, touching_pipe_gaps
+    global frame_up_to_60, jump_down, frame_counter, main_running_time, flash_index, game_over_index, game_over_opacity_index, score_val, old_score_val, touching_pipe_gaps
 
     frame_up_to_60 = 0
     jump_down = False
@@ -316,13 +391,9 @@ def set_variables_to_default():
     flash_index = 0
     game_over_index = 0
     game_over_opacity_index = -200
-    score = 0
-    old_score = -1
+    score_val = 0
+    old_score_val = -1
     touching_pipe_gaps = False
-
-def update_score():
-    global score
-    print(f"CURRENT SCORE: {score}")
 
 # loop functions
 def update_sprites():
@@ -331,6 +402,7 @@ def update_sprites():
     pipe_gaps.update()
     bird.update()
     bases.update()
+    score.update(12345)
     game_over.update(events)
 
     skies.draw(screen)
@@ -338,6 +410,7 @@ def update_sprites():
     pipe_gaps.draw(screen)
     bird.draw(screen)
     bases.draw(screen)
+    score.draw(screen)
     game_over.draw(screen)
     death_flash()
 
@@ -377,8 +450,8 @@ main_running_time = 0
 flash_index = 0
 game_over_index = 0
 game_over_opacity_index = -200
-score = 0
-old_score = -1
+score_val = 0
+old_score_val = -1
 touching_pipe_gaps = False
 
 # setup
@@ -387,6 +460,7 @@ bases = pygame.sprite.Group()
 pipes = pygame.sprite.Group()
 pipe_gaps = pygame.sprite.Group()
 bird = pygame.sprite.GroupSingle()
+score = pygame.sprite.Group()
 game_over = pygame.sprite.Group()
 add_sprites()
 
@@ -402,9 +476,6 @@ while True:
 
     # important functions / variables
     update_sprites()
-    if score != old_score:
-        old_score = score
-        update_score()
 
     frame_up_to_60 += 1
     if frame_up_to_60 > 60:
