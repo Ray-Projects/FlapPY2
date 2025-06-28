@@ -72,10 +72,11 @@ class Pipe(pygame.sprite.Sprite):
 class PipeGap(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((52 * scaling, pipe_distance))
+        width = 50
+        self.image = pygame.Surface((width, pipe_distance))
         self.image.set_alpha(0)
         self.image.fill((255, 0, 0))
-        self.rect = self.image.get_rect(topleft=(x, y))
+        self.rect = self.image.get_rect(topleft=(x + 104, y))
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
