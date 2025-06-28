@@ -255,6 +255,8 @@ class Score(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def render(self, orig_x, orig_y, centered):
+        global text_max_length
+
         self.rect.x, self.rect.y = orig_x, orig_y
         self.index = int(str(self.number)[self.digit_place])
         self.image = self.value[self.index]
@@ -269,8 +271,7 @@ class Score(pygame.sprite.Sprite):
             else:
                 self.rect.x += self.zero.width + 4
 
-            if index == 4:
-                self.rect.x += self.image.width
+            if index == text_max_length:
                 new_x = self.original_x - ((self.rect.x - self.original_x) / 2)
                 self.render(new_x, self.original_y, False)
 
@@ -354,9 +355,9 @@ def add_sprites():
     bases.add(Base(important_coords[0]))
 
     tmp0 = 12345
-    tmp1 = 288
-    tmp2 = 0
-    tmp3 = True
+    tmp1 = text_x
+    tmp2 = text_y
+    tmp3 = text_centered
     score.add(Score(tmp0, 0, tmp1, tmp2, tmp3))
     score.add(Score(tmp0, 1, tmp1, tmp2, tmp3))
     score.add(Score(tmp0, 2, tmp1, tmp2, tmp3))
@@ -402,7 +403,7 @@ def update_sprites():
     pipe_gaps.update()
     bird.update()
     bases.update()
-    score.update(12345)
+    score.update(83494)
     game_over.update(events)
 
     skies.draw(screen)
@@ -441,6 +442,10 @@ jump_height = 12
 max_fall_speed = 10
 dead_max_fall_speed = 20
 rotate_speed = 8
+text_max_length = 4
+text_centered = False
+text_x = 0
+text_y = 0
 
 # default variables
 frame_up_to_60 = 0
