@@ -526,7 +526,5 @@ while True:
     if mode == "main":
         main_running_time += 1
 
-    score_val += 1
-
     pygame.display.flip()
     clock.tick(60)
