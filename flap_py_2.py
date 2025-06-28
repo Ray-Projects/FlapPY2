@@ -473,9 +473,9 @@ dead_max_fall_speed = 20
 rotate_speed = 8
 
 text_max_length = 4
-text_centered = False
-text_x = 0
-text_y = 0
+text_centered = True
+text_x = 288
+text_y = 50
 text_leading_zeros = False
 
 # default variables
@@ -519,8 +519,6 @@ while True:
     frame_counter += 1
     if mode == "main":
         main_running_time += 1
-
-    score_val += 1
 
     pygame.display.flip()
     clock.tick(60)
