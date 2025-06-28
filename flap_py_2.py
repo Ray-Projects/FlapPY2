@@ -214,7 +214,7 @@ class Bird(pygame.sprite.Sprite):
         self.animate()
 
 class Score(pygame.sprite.Sprite):
-    def __init__(self, number, digit_place, x, y, centered):
+    def __init__(self, number, digit_place, x, y, centered, leading_zeros):
         pygame.sprite.Sprite.__init__(self)
 
         self.number = str(number)
@@ -222,6 +222,7 @@ class Score(pygame.sprite.Sprite):
         self.original_x = x
         self.original_y = y
         self.centered = centered
+        self.leading_zeros = leading_zeros
 
         self.zero = pygame.image.load("flappy-bird-assets-master/sprites/0.png")
         self.one = pygame.image.load("flappy-bird-assets-master/sprites/1.png")
@@ -256,7 +257,7 @@ class Score(pygame.sprite.Sprite):
 
     def convert(self, number):
         new_number = number[::-1]
-        if len(number) < text_max_length:
+        if len(number) - 1 < text_max_length:
             i = 0
             while i < (text_max_length - (len(number) - 1)):
                 i += 1
@@ -265,11 +266,11 @@ class Score(pygame.sprite.Sprite):
 
         return new_number
 
-
     def render(self, orig_x, orig_y, centered):
         global text_max_length
 
         self.rect.x, self.rect.y = orig_x, orig_y
+        print(self.number, self.digit_place)
         self.index = int(self.number[self.digit_place])
         self.image = self.value[self.index]
 
@@ -368,14 +369,11 @@ def add_sprites():
     bases.add(Base(important_coords[0]))
 
     tmp0 = 12345
-    tmp1 = text_x
-    tmp2 = text_y
-    tmp3 = text_centered
-    score.add(Score(tmp0, 0, tmp1, tmp2, tmp3))
-    score.add(Score(tmp0, 1, tmp1, tmp2, tmp3))
-    score.add(Score(tmp0, 2, tmp1, tmp2, tmp3))
-    score.add(Score(tmp0, 3, tmp1, tmp2, tmp3))
-    score.add(Score(tmp0, 4, tmp1, tmp2, tmp3))
+    score.add(Score(tmp0, 0, text_x, text_y, text_centered, text_leading_zeros))
+    score.add(Score(tmp0, 1, text_x, text_y, text_centered, text_leading_zeros))
+    score.add(Score(tmp0, 2, text_x, text_y, text_centered, text_leading_zeros))
+    score.add(Score(tmp0, 3, text_x, text_y, text_centered, text_leading_zeros))
+    score.add(Score(tmp0, 4, text_x, text_y, text_centered, text_leading_zeros))
 
     game_over.add(GameOver("gameover"))
     game_over.add(GameOver("restart"))
@@ -455,10 +453,12 @@ jump_height = 12
 max_fall_speed = 10
 dead_max_fall_speed = 20
 rotate_speed = 8
+
 text_max_length = 4
 text_centered = False
 text_x = 0
 text_y = 0
+text_leading_zeros = False
 
 # default variables
 frame_up_to_60 = 0
@@ -502,7 +502,7 @@ while True:
     if mode == "main":
         main_running_time += 1
 
-    score_val += 1
+    score_val += 100
 
     pygame.display.flip()
     clock.tick(60)
