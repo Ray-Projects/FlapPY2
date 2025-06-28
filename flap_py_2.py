@@ -127,6 +127,7 @@ class Bird(pygame.sprite.Sprite):
                 if mode == "main":
                     self.acceleration = - jump_height
                     self.angle = 20
+                    wing_ogg.play()
             jump_down = True
         else:
             jump_down = False
@@ -170,19 +171,22 @@ class Bird(pygame.sprite.Sprite):
     def dead(self):
         global frame_counter, main_running_time, rotate_speed
 
+        if self.touching_base:
+            self.rect.center = (self.rect.center[0], 790)
+
+        if frame_counter - main_running_time == 0:
+            hit_ogg.play()
+            die_ogg.play()
+
         if frame_counter - main_running_time > 20 and not self.touching_base:
             self.acceleration += 1
             self.angle -= rotate_speed
         else:
             self.acceleration = 0
+
+
         if self.angle < -90:
             self.angle = -90
-
-        if self.rect.center[1] > 789:
-            self.rect.center = (self.rect.center[0], 790)
-            self.touching_base = True
-        else:
-            self.touching_base = False
 
     def collide(self):
         global mode, score_val, touching_pipe_gaps, bases, pipes, pipe_gaps
@@ -197,9 +201,15 @@ class Bird(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, pipe_gaps, False, pygame.sprite.collide_rect):
             if not touching_pipe_gaps:
                 score_val += 1
+                point_ogg.play()
             touching_pipe_gaps = True
         else:
             touching_pipe_gaps = False
+
+        if self.rect.center[1] > 789:
+            self.touching_base = True
+        else:
+            self.touching_base = False
 
     def update(self):
         global mode
@@ -407,6 +417,8 @@ def add_sprites():
     game_over.add(GameOver("gameover"))
     game_over.add(GameOver("restart"))
 
+    swoosh_ogg.play()
+
 def add_pipe(x, y):
     global pipes, pipe_distance, pipe_gaps
 
@@ -468,6 +480,7 @@ def death_flash():
 
 # initiating variables
 pygame.init()
+pygame.mixer.init()
 pygame_icon = pygame.image.load('flappy-bird-assets-master/favicon.ico')
 pygame.display.set_icon(pygame_icon)
 pygame.display.set_caption('Flappy Bird')
@@ -484,6 +497,12 @@ max_fall_speed = 10
 dead_max_fall_speed = 20
 rotate_speed = 8
 text_max_length = 4
+
+die_ogg = pygame.mixer.Sound('flappy-bird-assets-master/audio/die.ogg')
+hit_ogg = pygame.mixer.Sound('flappy-bird-assets-master/audio/hit.ogg')
+point_ogg = pygame.mixer.Sound('flappy-bird-assets-master/audio/point.ogg')
+swoosh_ogg = pygame.mixer.Sound('flappy-bird-assets-master/audio/swoosh.ogg')
+wing_ogg = pygame.mixer.Sound('flappy-bird-assets-master/audio/wing.ogg')
 
 # default variables
 frame_up_to_60 = 0
