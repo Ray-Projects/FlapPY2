@@ -74,7 +74,7 @@ class PipeGap(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         width = 50
         self.image = pygame.Surface((width, pipe_distance))
-        self.image.set_alpha(128)
+        self.image.set_alpha(0)
         self.image.fill((255, 0, 0))
         self.rect = self.image.get_rect(topleft=(x + 104, y))
         self.mask = pygame.mask.from_surface(self.image)
