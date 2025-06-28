@@ -217,7 +217,7 @@ class Score(pygame.sprite.Sprite):
     def __init__(self, number, digit_place, x, y, centered):
         pygame.sprite.Sprite.__init__(self)
 
-        self.number = number
+        self.number = str(number)
         self.digit_place = digit_place
         self.original_x = x
         self.original_y = y
@@ -254,14 +254,26 @@ class Score(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(topleft=(x, y))
 
+    def convert(self, number):
+        new_number = number[::-1]
+        if len(number) < text_max_length:
+            i = 0
+            while i < (text_max_length - (len(number) - 1)):
+                i += 1
+                new_number = new_number + "0"
+        new_number = new_number[::-1]
+
+        return new_number
+
+
     def render(self, orig_x, orig_y, centered):
         global text_max_length
 
         self.rect.x, self.rect.y = orig_x, orig_y
-        self.index = int(str(self.number)[self.digit_place])
+        self.index = int(self.number[self.digit_place])
         self.image = self.value[self.index]
 
-        for index, index_value in enumerate(str(self.number)):
+        for index, index_value in enumerate(self.number):
             if index == self.digit_place:
                 if not centered:
                     break
@@ -276,7 +288,8 @@ class Score(pygame.sprite.Sprite):
                 self.render(new_x, self.original_y, False)
 
     def update(self, number):
-        self.number = number
+        self.number = self.convert(str(number))
+        self.convert(self.number)
         self.render(self.original_x, self.original_y, self.centered)
 
 class GameOver(pygame.sprite.Sprite):
@@ -403,7 +416,7 @@ def update_sprites():
     pipe_gaps.update()
     bird.update()
     bases.update()
-    score.update(83494)
+    score.update(score_val)
     game_over.update(events)
 
     skies.draw(screen)
@@ -488,6 +501,8 @@ while True:
     frame_counter += 1
     if mode == "main":
         main_running_time += 1
+
+    score_val += 1
 
     pygame.display.flip()
     clock.tick(60)
