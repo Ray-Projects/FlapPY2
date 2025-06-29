@@ -1,6 +1,7 @@
 import pygame
 import random
 import sys
+import math
 
 # sprites
 class Sky(pygame.sprite.Sprite):
@@ -50,12 +51,10 @@ class Pipe(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        # moves pipe, and if off the left edge of the screen it goes to the spot of the farthest right pipe (in this case 768),
-        # plus the gap between the pipe (in this case 2 1/3's of 576). we also subtract image width to make up for the image subtraction from earlier,
-        # preventing the gap between pipes changing.
         global pipes
 
-        self.rect.x -= 3
+        if mode != "float":
+            self.rect.x -= 3
 
         if not(self.rect.x <= -self.image.width):
             return
@@ -82,7 +81,8 @@ class PipeGap(pygame.sprite.Sprite):
     def move(self):
         global pipes
 
-        self.rect.x -= 3
+        if mode != "float":
+            self.rect.x -= 3
 
         if self.rect.x <= -self.image.width:
             self.kill()
@@ -125,19 +125,58 @@ class Bird(pygame.sprite.Sprite):
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
             if not jump_down:
-                if mode == "main":
+                if mode != "dead":
                     self.acceleration = - jump_height
                     self.angle = 20
                     wing_ogg.play()
+                if mode == "float":
+                    mode = "main"
             jump_down = True
         else:
             jump_down = False
 
-    def move(self):
-        global gravity, max_fall_speed
+    def main(self):
+        global rotate_speed
 
         self.acceleration += gravity
         self.rect.y += self.acceleration
+
+        self.index += 0.3
+        if self.falltime > 20:
+            self.angle -= rotate_speed
+
+        if self.angle < -90:
+            self.angle = -90
+
+    def dead(self):
+        global frame_counter, alive_running_time, rotate_speed
+
+        self.acceleration += gravity
+        self.rect.y += self.acceleration
+
+        if self.touching_base:
+            self.rect.center = (self.rect.center[0], 790)
+
+        if frame_counter - alive_running_time == 1:
+            hit_ogg.play()
+            die_ogg.play()
+
+        if frame_counter - alive_running_time > 20 and not self.touching_base:
+            self.acceleration += 1
+            self.angle -= rotate_speed
+        else:
+            self.acceleration = 0
+
+
+        if self.angle < -90:
+            self.angle = -90
+
+    def float(self):
+        self.rect.y = 300 + (math.sin(frame_counter / 20) * 50)
+
+    def move(self):
+        global gravity, max_fall_speed
+
         if self.rect.y < 0 - self.rect.height:
             self.rect.y = 0 - self.rect.height
 
@@ -152,42 +191,6 @@ class Bird(pygame.sprite.Sprite):
             self.falltime += 1
         else:
             self.falltime = 0
-
-    def animate(self):
-        if self.index >= len(self.flap):
-            self.index = 0
-        self.image = self.flap[int(self.index)]
-        self.image = pygame.transform.rotate(self.image, self.angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-    def main(self):
-        global rotate_speed
-
-        self.index += 0.3
-        if self.falltime > 20:
-            self.angle -= rotate_speed
-        if self.angle < -90:
-            self.angle = -90
-
-    def dead(self):
-        global frame_counter, main_running_time, rotate_speed
-
-        if self.touching_base:
-            self.rect.center = (self.rect.center[0], 790)
-
-        if frame_counter - main_running_time == 0:
-            hit_ogg.play()
-            die_ogg.play()
-
-        if frame_counter - main_running_time > 20 and not self.touching_base:
-            self.acceleration += 1
-            self.angle -= rotate_speed
-        else:
-            self.acceleration = 0
-
-
-        if self.angle < -90:
-            self.angle = -90
 
     def collide(self):
         global mode, score_val, touching_pipe_gaps, bases, pipes, pipe_gaps
@@ -212,16 +215,25 @@ class Bird(pygame.sprite.Sprite):
         else:
             self.touching_base = False
 
+    def animate(self):
+        if self.index >= len(self.flap):
+            self.index = 0
+        self.image = self.flap[int(self.index)]
+        self.image = pygame.transform.rotate(self.image, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
+
     def update(self):
         global mode
 
         self.input()
-        self.move()
-        self.collide()
         if mode == "main":
             self.main()
         elif mode == "dead":
             self.dead()
+        elif mode == "float":
+            self.float()
+        self.move()
+        self.collide()
         self.animate()
 
 class Score(pygame.sprite.Sprite):
@@ -370,7 +382,7 @@ class GameOver(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.most_recent_event == "buttonclicked":
                         self.most_recent_event = "buttonreleased"
-                        mode = "main"
+                        mode = "float"
                         delete_sprites()
                         set_variables_to_default()
                         add_sprites()
@@ -436,14 +448,14 @@ def delete_sprites():
     game_over.empty()
 
 def set_variables_to_default():
-    global frame_up_to_60, jump_down, frame_counter, main_running_time, touching_pipe_gaps, \
+    global frame_up_to_60, jump_down, frame_counter, alive_running_time, touching_pipe_gaps, \
         flash_index, game_over_index, game_over_opacity_index, \
         score_val
 
     frame_up_to_60 = 0
     jump_down = False
     frame_counter = 0
-    main_running_time = 0
+    alive_running_time = 0
     touching_pipe_gaps = False
     flash_index = 0
     game_over_index = 0
@@ -509,7 +521,7 @@ wing_ogg = pygame.mixer.Sound('flappy-bird-assets-master/audio/wing.ogg')
 frame_up_to_60 = 0
 jump_down = False
 frame_counter = 0
-main_running_time = 0
+alive_running_time = 0
 flash_index = 0
 game_over_index = 0
 game_over_opacity_index = -200
@@ -527,7 +539,7 @@ game_over = pygame.sprite.Group()
 add_sprites()
 
 # game loop
-mode = "main"
+mode = "float"
 while True:
     # check for events
     events = pygame.event.get()
@@ -543,8 +555,8 @@ while True:
     if frame_up_to_60 > 60:
         frame_up_to_60 = 0
     frame_counter += 1
-    if mode == "main":
-        main_running_time += 1
+    if mode != "dead":
+        alive_running_time += 1
 
     pygame.display.flip()
     clock.tick(60)
