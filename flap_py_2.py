@@ -51,21 +51,18 @@ class Pipe(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        global pipes
-
-        if mode != "float":
-            self.rect.x -= 3
+        self.rect.x -= 3
 
         if not(self.rect.x <= -self.image.width):
             return
         if self.position == 1:
-            add_pipe(important_coords[3] -self.image.width, random.randint(300, 700))
+            add_pipe(important_coords[3] - self.image.width, random.randint(300, 700))
         self.kill()
 
     def update(self):
         global mode
 
-        if mode != "dead":
+        if mode == "main":
             self.move()
 
 class PipeGap(pygame.sprite.Sprite):
@@ -79,8 +76,6 @@ class PipeGap(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        global pipes
-
         if mode != "float":
             self.rect.x -= 3
 
@@ -90,7 +85,7 @@ class PipeGap(pygame.sprite.Sprite):
     def update(self):
         global mode
 
-        if mode != "dead":
+        if mode == "main":
             self.move()
 
 class Bird(pygame.sprite.Sprite):
