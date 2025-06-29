@@ -410,9 +410,9 @@ class GameOver(pygame.sprite.Sprite):
 # functions
 def add_sprites():
     skies.add(Sky())
-    add_pipe(important_coords[2], random.randint(300, 700))
-    add_pipe(important_coords[4], random.randint(300, 700))
-    add_pipe(important_coords[6], random.randint(300, 700))
+    add_pipe(important_coords[2], random.randint(250, 700))
+    add_pipe(important_coords[4], random.randint(250, 700))
+    add_pipe(important_coords[6], random.randint(250, 700))
     bird.add(Bird())
     bases.add(Base(0))
     bases.add(Base(important_coords[0]))
@@ -429,7 +429,7 @@ def add_sprites():
 
     swoosh_ogg.play()
 
-    # if we dont update now it will cause a flash of things in the wrong spot for 1 frame
+    # if we don't update immediately, it will cause a flash of things in the wrong spot for 1 frame
     update_sprites()
 
 def add_pipe(x, y):
