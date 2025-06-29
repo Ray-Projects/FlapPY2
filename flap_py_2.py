@@ -142,9 +142,9 @@ class Bird(pygame.sprite.Sprite):
         self.rect.y += self.acceleration
 
         self.index += 0.3
+
         if self.falltime > 20:
             self.angle -= rotate_speed
-
         if self.angle < -90:
             self.angle = -90
 
@@ -173,6 +173,8 @@ class Bird(pygame.sprite.Sprite):
 
     def float(self):
         self.rect.y = 300 + (math.sin(frame_counter / 20) * 50)
+
+        self.index += 0.3
 
     def move(self):
         global gravity, max_fall_speed
