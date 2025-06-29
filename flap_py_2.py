@@ -432,6 +432,9 @@ def add_sprites():
 
     swoosh_ogg.play()
 
+    # if we dont update now it will cause a flash of things in the wrong spot for 1 frame
+    update_sprites()
+
 def add_pipe(x, y):
     global pipes, pipe_distance, pipe_gaps
 
@@ -536,10 +539,11 @@ pipe_gaps = pygame.sprite.Group()
 bird = pygame.sprite.GroupSingle()
 score = pygame.sprite.Group()
 game_over = pygame.sprite.Group()
+
+events = pygame.event.get()
+mode = "float"
 add_sprites()
 
-# game loop
-mode = "float"
 while True:
     # check for events
     events = pygame.event.get()
