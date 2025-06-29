@@ -76,7 +76,7 @@ class PipeGap(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        if mode != "float":
+        if mode != "glide":
             self.rect.x -= 3
 
         if self.rect.x <= -self.image.width:
@@ -124,7 +124,7 @@ class Bird(pygame.sprite.Sprite):
                     self.acceleration = - jump_height
                     self.angle = 20
                     wing_ogg.play()
-                if mode == "float":
+                if mode == "glide":
                     mode = "main"
             jump_down = True
         else:
@@ -166,7 +166,7 @@ class Bird(pygame.sprite.Sprite):
         if self.angle < -90:
             self.angle = -90
 
-    def float(self):
+    def glide(self):
         self.rect.y = 300 + (math.sin(frame_counter / 20) * 50)
 
         self.index += 0.3
@@ -227,8 +227,8 @@ class Bird(pygame.sprite.Sprite):
             self.main()
         elif mode == "dead":
             self.dead()
-        elif mode == "float":
-            self.float()
+        elif mode == "glide":
+            self.glide()
         self.move()
         self.collide()
         self.animate()
@@ -379,7 +379,7 @@ class GameOver(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.most_recent_event == "buttonclicked":
                         self.most_recent_event = "buttonreleased"
-                        mode = "float"
+                        mode = "glide"
                         delete_sprites()
                         set_variables_to_default()
                         add_sprites()
@@ -538,7 +538,7 @@ score = pygame.sprite.Group()
 game_over = pygame.sprite.Group()
 
 events = pygame.event.get()
-mode = "float"
+mode = "glide"
 add_sprites()
 
 while True:
