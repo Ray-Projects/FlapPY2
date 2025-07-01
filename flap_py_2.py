@@ -409,23 +409,38 @@ class Message(pygame.sprite.Sprite):
     def __init__(self, type):
         pygame.sprite.Sprite.__init__(self)
 
+        self.type = type
         self.message_png = pygame.image.load("flappy-bird-assets-master/sprites/message.png")
 
-        if type == "tap":
+        if self.type == "tap":
             self.image = pygame.surface.Surface((184, 100), pygame.SRCALPHA)
             self.image.fill((0, 0, 0, 0))
             self.image.blit(self.message_png, (0, -167))
+        elif self.type == "getready":
+            self.image = pygame.surface.Surface((184, 60), pygame.SRCALPHA)
+            self.image.fill((0, 0, 0, 0))
+            self.image.blit(self.message_png, (0, -102))
 
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
-        self.rect = self.image.get_rect(topleft=(104, 398))
+        self.rect = self.image.get_rect(topleft=(0, 0))
 
-    def update(self):
+        self.render()
+
+    def render(self):
+        if self.type == "tap":
+            self.rect.topleft = (104, 398)
+        elif self.type == "getready":
+            self.rect.topleft = (104, 230)
+
         if mode == "glide":
             self.image.set_alpha(255)
         else:
             self.image.set_alpha(0)
+
+    def update(self):
+        self.render()
 
 # functions
 def add_sprites():
@@ -448,6 +463,7 @@ def add_sprites():
     game_over.add(GameOver("restart"))
 
     messages.add(Message("tap"))
+    messages.add(Message("getready"))
 
     swoosh_ogg.play()
 
@@ -467,7 +483,9 @@ def delete_sprites():
     pipe_gaps.empty()
     bases.empty()
     bird.remove(Bird())
+    score.empty()
     game_over.empty()
+    messages.empty()
 
 def set_variables_to_default():
     global frame_up_to_60, jump_down, frame_counter, alive_running_time, touching_pipe_gaps, \
