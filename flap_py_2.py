@@ -120,12 +120,13 @@ class Bird(pygame.sprite.Sprite):
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
             if not jump_down:
-                if mode == "glide" or mode == "main":
-                    self.acceleration = - jump_height
-                    self.angle = 20
-                    wing_ogg.play()
-                if mode == "glide":
-                    mode = "main"
+                if frame_counter > 30:
+                    if mode == "glide" or mode == "main":
+                        self.acceleration = - jump_height
+                        self.angle = 20
+                        wing_ogg.play()
+                    if mode == "glide":
+                        mode = "main"
             jump_down = True
         else:
             jump_down = False
@@ -193,7 +194,7 @@ class Bird(pygame.sprite.Sprite):
             self.falltime = 0
 
     def collide(self):
-        global mode, score_val, touching_pipe_gaps, bases, pipes, pipe_gaps
+        global mode, score_val, time_since_touching_pipe_gap
 
         if self.rect.center[1] > 790:
             mode = "dead"
@@ -203,12 +204,12 @@ class Bird(pygame.sprite.Sprite):
                 mode = "dead"
 
         if pygame.sprite.spritecollide(self, pipe_gaps, False, pygame.sprite.collide_rect):
-            if not touching_pipe_gaps:
+            if time_since_touching_pipe_gap > 60:
                 score_val += 1
                 point_ogg.play()
-            touching_pipe_gaps = True
+            time_since_touching_pipe_gap = 0
         else:
-            touching_pipe_gaps = False
+            time_since_touching_pipe_gap += 1
 
         if self.rect.center[1] > 789:
             self.touching_base = True
@@ -537,7 +538,7 @@ def delete_sprites():
     messages.empty()
 
 def set_variables_to_default():
-    global frame_up_to_60, jump_down, frame_counter, alive_running_time, touching_pipe_gaps, \
+    global frame_up_to_60, jump_down, frame_counter, alive_running_time, time_since_touching_pipe_gap, \
         flash_index, game_over_index, game_over_opacity_index, \
         score_val
 
@@ -545,7 +546,7 @@ def set_variables_to_default():
     jump_down = False
     frame_counter = 0
     alive_running_time = 0
-    touching_pipe_gaps = False
+    time_since_touching_pipe_gap = False
     flash_index = 0
     game_over_index = 0
     game_over_opacity_index = -200
@@ -617,7 +618,7 @@ flash_index = 0
 game_over_index = 0
 game_over_opacity_index = -200
 score_val = 0
-touching_pipe_gaps = False
+time_since_touching_pipe_gap = False
 
 # setup
 skies = pygame.sprite.Group()
