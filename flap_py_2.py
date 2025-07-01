@@ -120,12 +120,14 @@ class Bird(pygame.sprite.Sprite):
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
             if not jump_down:
-                if mode != "dead":
+                if mode == "glide" or mode == "main":
                     self.acceleration = - jump_height
                     self.angle = 20
                     wing_ogg.play()
                 if mode == "glide":
                     mode = "main"
+                if mode == "title":
+                    mode = "glide"
             jump_down = True
         else:
             jump_down = False
@@ -167,7 +169,12 @@ class Bird(pygame.sprite.Sprite):
             self.angle = -90
 
     def glide(self):
+        self.rect.topleft = (120, 400)
         self.index += 0.3
+
+    def title(self):
+        self.index += 0.3
+        self.rect.topleft = (440, 370 + (math.sin(frame_counter / 15) * 20))
 
     def move(self):
         global gravity, max_fall_speed
@@ -227,6 +234,8 @@ class Bird(pygame.sprite.Sprite):
             self.dead()
         elif mode == "glide":
             self.glide()
+        elif mode == "title":
+            self.title()
         self.move()
         self.collide()
         self.animate()
@@ -377,7 +386,7 @@ class GameOver(pygame.sprite.Sprite):
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.most_recent_event == "buttonclicked":
                         self.most_recent_event = "buttonreleased"
-                        mode = "glide"
+                        mode = "title"
                         delete_sprites()
                         set_variables_to_default()
                         add_sprites()
@@ -420,6 +429,10 @@ class Message(pygame.sprite.Sprite):
             self.image = pygame.surface.Surface((184, 60), pygame.SRCALPHA)
             self.image.fill((0, 0, 0, 0))
             self.image.blit(self.message_png, (0, -102))
+        elif self.type == "flappybird":
+            self.image = pygame.surface.Surface((184, 60), pygame.SRCALPHA)
+            self.image.fill((0, 0, 0, 0))
+            self.image.blit(self.message_png, (0, 0))
 
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
@@ -433,11 +446,19 @@ class Message(pygame.sprite.Sprite):
             self.rect.topleft = (104, 398)
         elif self.type == "getready":
             self.rect.topleft = (104, 230)
+        elif self.type == "flappybird":
+            self.rect.topleft = (70, 350 + (math.sin(frame_counter / 15) * 20))
 
-        if mode == "glide":
-            self.image.set_alpha(255)
+        if self.type != "flappybird":
+            if mode == "glide":
+                self.image.set_alpha(255)
+            else:
+                self.image.set_alpha(0)
         else:
-            self.image.set_alpha(0)
+            if mode == "title":
+                self.image.set_alpha(255)
+            else:
+                self.image.set_alpha(0)
 
     def update(self):
         self.render()
@@ -464,6 +485,7 @@ def add_sprites():
 
     messages.add(Message("tap"))
     messages.add(Message("getready"))
+    messages.add(Message("flappybird"))
 
     swoosh_ogg.play()
 
@@ -581,7 +603,7 @@ game_over = pygame.sprite.Group()
 messages = pygame.sprite.Group()
 
 events = pygame.event.get()
-mode = "glide"
+mode = "title"
 add_sprites()
 
 while True:
