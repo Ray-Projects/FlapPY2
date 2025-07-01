@@ -126,8 +126,6 @@ class Bird(pygame.sprite.Sprite):
                     wing_ogg.play()
                 if mode == "glide":
                     mode = "main"
-                if mode == "title":
-                    mode = "glide"
             jump_down = True
         else:
             jump_down = False
@@ -363,7 +361,6 @@ class GameOver(pygame.sprite.Sprite):
             tmp1 = self.image.height * scaling
             self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
             self.starting_y = 0
-            self.rect = self.image.get_rect(midtop=(288, self.starting_y))
 
         elif self.type == "restart":
             self.image = pygame.image.load("flappy-bird-assets-master/sprites/restart.png")
@@ -371,7 +368,8 @@ class GameOver(pygame.sprite.Sprite):
             tmp1 = self.image.height * scaling
             self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
             self.starting_y = 400
-            self.rect = self.image.get_rect(midtop=(288, self.starting_y))
+
+        self.rect = self.image.get_rect(midtop=(288, self.starting_y))
 
         self.image.set_alpha(0)
         self.most_recent_event = 0
@@ -435,13 +433,34 @@ class Message(pygame.sprite.Sprite):
             self.image = pygame.surface.Surface((184, 60), pygame.SRCALPHA)
             self.image.fill((0, 0, 0, 0))
             self.image.blit(self.message_png, (0, 0))
+        elif self.type == "start":
+            self.image = pygame.image.load("flappy-bird-assets-master/sprites/start.png")
 
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
         self.rect = self.image.get_rect(topleft=(0, 0))
+        self.most_recent_event = None
 
         self.render()
+
+    def input(self, events):
+        global mode, jump_down, game_over_index
+
+        if self.type == "start":
+            for event in events:
+                if self.rect.collidepoint(pygame.mouse.get_pos()):
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        self.most_recent_event = "buttonclicked"
+
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    if self.most_recent_event == "buttonclicked":
+                        self.most_recent_event = "buttonreleased"
+                        mode = "glide"
+                        delete_sprites()
+                        set_variables_to_default()
+                        add_sprites()
+                        swoosh_ogg.play()
 
     def render(self):
         if self.type == "tap":
@@ -451,18 +470,25 @@ class Message(pygame.sprite.Sprite):
         elif self.type == "flappybird":
             self.rect.topleft = (70, 350 + (math.sin(frame_counter / 15) * 20))
 
-        if self.type != "flappybird":
-            if mode == "glide":
-                self.image.set_alpha(255)
-            else:
-                self.image.set_alpha(0)
-        else:
+        elif self.type == "start":
+            self.rect.center = (288, 600)
+            if self.most_recent_event == "buttonclicked":
+                self.rect.y += 10
+
+        if self.type == "flappybird" or self.type == "start":
             if mode == "title":
                 self.image.set_alpha(255)
             else:
                 self.image.set_alpha(0)
+        else:
+            if mode == "glide":
+                self.image.set_alpha(255)
+            else:
+                self.image.set_alpha(0)
 
-    def update(self):
+    def update(self, events):
+        if mode == "title":
+            self.input(events)
         self.render()
 
 # functions
@@ -488,8 +514,7 @@ def add_sprites():
     messages.add(Message("tap"))
     messages.add(Message("getready"))
     messages.add(Message("flappybird"))
-
-    swoosh_ogg.play()
+    messages.add(Message("start"))
 
     # if we don't update immediately, it will cause a flash of things in the wrong spot for 1 frame
     update_sprites()
@@ -535,7 +560,7 @@ def update_sprites():
     bases.update()
     score.update(score_val)
     game_over.update(events)
-    messages.update()
+    messages.update(events)
 
     skies.draw(screen)
     pipes.draw(screen)
