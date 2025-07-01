@@ -104,7 +104,7 @@ class Bird(pygame.sprite.Sprite):
         self.flap = [self.downflap, self.midflap, self.upflap, self.midflap]
         self.index = 0
         self.image = self.flap[self.index]
-        self.rect = self.image.get_rect(topleft=(250, 200))
+        self.rect = self.image.get_rect(center=(144, 200))
         self.mask = pygame.mask.from_surface(self.image)
 
         self.acceleration = 0
@@ -407,6 +407,22 @@ class GameOver(pygame.sprite.Sprite):
             self.input(events)
             self.animate()
 
+class Message(pygame.sprite.Sprite):
+    def __init__(self, type):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.message_png = pygame.image.load("flappy-bird-assets-master/sprites/message.png")
+
+        if type == "tap":
+            self.image = pygame.surface.Surface((184, 100), pygame.SRCALPHA)
+            self.image.fill((0, 0, 0, 0))
+            self.image.blit(self.message_png, (0, -167))
+
+        tmp0 = self.image.width * scaling
+        tmp1 = self.image.height * scaling
+        self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+        self.rect = self.image.get_rect(center=(288, 512))
+
 # functions
 def add_sprites():
     skies.add(Sky())
@@ -426,6 +442,8 @@ def add_sprites():
 
     game_over.add(GameOver("gameover"))
     game_over.add(GameOver("restart"))
+
+    messages.add(Message("tap"))
 
     swoosh_ogg.play()
 
@@ -471,6 +489,7 @@ def update_sprites():
     bases.update()
     score.update(score_val)
     game_over.update(events)
+    messages.update()
 
     skies.draw(screen)
     pipes.draw(screen)
@@ -479,6 +498,7 @@ def update_sprites():
     bases.draw(screen)
     score.draw(screen)
     game_over.draw(screen)
+    messages.draw(screen)
     death_flash()
 
 def death_flash():
@@ -536,6 +556,7 @@ pipe_gaps = pygame.sprite.Group()
 bird = pygame.sprite.GroupSingle()
 score = pygame.sprite.Group()
 game_over = pygame.sprite.Group()
+messages = pygame.sprite.Group()
 
 events = pygame.event.get()
 mode = "glide"
