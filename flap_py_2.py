@@ -104,7 +104,7 @@ class Bird(pygame.sprite.Sprite):
         self.flap = [self.downflap, self.midflap, self.upflap, self.midflap]
         self.index = 0
         self.image = self.flap[self.index]
-        self.rect = self.image.get_rect(center=(144, 200))
+        self.rect = self.image.get_rect(topleft=(120, 400))
         self.mask = pygame.mask.from_surface(self.image)
 
         self.acceleration = 0
@@ -167,8 +167,6 @@ class Bird(pygame.sprite.Sprite):
             self.angle = -90
 
     def glide(self):
-        self.rect.y = 300 + (math.sin(frame_counter / 20) * 50)
-
         self.index += 0.3
 
     def move(self):
@@ -421,7 +419,13 @@ class Message(pygame.sprite.Sprite):
         tmp0 = self.image.width * scaling
         tmp1 = self.image.height * scaling
         self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
-        self.rect = self.image.get_rect(center=(288, 512))
+        self.rect = self.image.get_rect(topleft=(104, 398))
+
+    def update(self):
+        if mode == "glide":
+            self.image.set_alpha(255)
+        else:
+            self.image.set_alpha(0)
 
 # functions
 def add_sprites():
