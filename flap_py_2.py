@@ -104,7 +104,7 @@ class Bird(pygame.sprite.Sprite):
         self.flap = [self.downflap, self.midflap, self.upflap, self.midflap]
         self.index = 0
         self.image = self.flap[self.index]
-        self.rect = self.image.get_rect(topleft=(250, 200))
+        self.rect = self.image.get_rect(topleft=(120, 400))
         self.mask = pygame.mask.from_surface(self.image)
 
         self.acceleration = 0
@@ -167,8 +167,6 @@ class Bird(pygame.sprite.Sprite):
             self.angle = -90
 
     def glide(self):
-        self.rect.y = 300 + (math.sin(frame_counter / 20) * 50)
-
         self.index += 0.3
 
     def move(self):
@@ -333,7 +331,7 @@ class Score(pygame.sprite.Sprite):
 
         if not self.leading_zeros[self.digit_place]:
             self.image.set_alpha(game_over_opacity_index)
-        self.rect.y = 150 + game_over_index
+        self.rect.y = 200 + game_over_index
 
     def update(self, number):
         global mode
@@ -407,6 +405,43 @@ class GameOver(pygame.sprite.Sprite):
             self.input(events)
             self.animate()
 
+class Message(pygame.sprite.Sprite):
+    def __init__(self, type):
+        pygame.sprite.Sprite.__init__(self)
+
+        self.type = type
+        self.message_png = pygame.image.load("flappy-bird-assets-master/sprites/message.png")
+
+        if self.type == "tap":
+            self.image = pygame.surface.Surface((184, 100), pygame.SRCALPHA)
+            self.image.fill((0, 0, 0, 0))
+            self.image.blit(self.message_png, (0, -167))
+        elif self.type == "getready":
+            self.image = pygame.surface.Surface((184, 60), pygame.SRCALPHA)
+            self.image.fill((0, 0, 0, 0))
+            self.image.blit(self.message_png, (0, -102))
+
+        tmp0 = self.image.width * scaling
+        tmp1 = self.image.height * scaling
+        self.image = pygame.transform.scale(self.image, (tmp0, tmp1))
+        self.rect = self.image.get_rect(topleft=(0, 0))
+
+        self.render()
+
+    def render(self):
+        if self.type == "tap":
+            self.rect.topleft = (104, 398)
+        elif self.type == "getready":
+            self.rect.topleft = (104, 230)
+
+        if mode == "glide":
+            self.image.set_alpha(255)
+        else:
+            self.image.set_alpha(0)
+
+    def update(self):
+        self.render()
+
 # functions
 def add_sprites():
     skies.add(Sky())
@@ -427,6 +462,9 @@ def add_sprites():
     game_over.add(GameOver("gameover"))
     game_over.add(GameOver("restart"))
 
+    messages.add(Message("tap"))
+    messages.add(Message("getready"))
+
     swoosh_ogg.play()
 
     # if we don't update immediately, it will cause a flash of things in the wrong spot for 1 frame
@@ -445,7 +483,9 @@ def delete_sprites():
     pipe_gaps.empty()
     bases.empty()
     bird.remove(Bird())
+    score.empty()
     game_over.empty()
+    messages.empty()
 
 def set_variables_to_default():
     global frame_up_to_60, jump_down, frame_counter, alive_running_time, touching_pipe_gaps, \
@@ -471,6 +511,7 @@ def update_sprites():
     bases.update()
     score.update(score_val)
     game_over.update(events)
+    messages.update()
 
     skies.draw(screen)
     pipes.draw(screen)
@@ -479,6 +520,7 @@ def update_sprites():
     bases.draw(screen)
     score.draw(screen)
     game_over.draw(screen)
+    messages.draw(screen)
     death_flash()
 
 def death_flash():
@@ -536,6 +578,7 @@ pipe_gaps = pygame.sprite.Group()
 bird = pygame.sprite.GroupSingle()
 score = pygame.sprite.Group()
 game_over = pygame.sprite.Group()
+messages = pygame.sprite.Group()
 
 events = pygame.event.get()
 mode = "glide"
