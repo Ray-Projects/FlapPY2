@@ -120,12 +120,13 @@ class Bird(pygame.sprite.Sprite):
         mouse = pygame.mouse.get_pressed()
         if keys[pygame.K_SPACE] or mouse[0]:
             if not jump_down:
-                if mode == "glide" or mode == "main":
-                    self.acceleration = - jump_height
-                    self.angle = 20
-                    wing_ogg.play()
-                if mode == "glide":
-                    mode = "main"
+                if frame_counter > 30:
+                    if mode == "glide" or mode == "main":
+                        self.acceleration = - jump_height
+                        self.angle = 20
+                        wing_ogg.play()
+                    if mode == "glide":
+                        mode = "main"
             jump_down = True
         else:
             jump_down = False
