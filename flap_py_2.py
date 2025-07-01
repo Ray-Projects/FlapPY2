@@ -331,7 +331,7 @@ class Score(pygame.sprite.Sprite):
 
         if not self.leading_zeros[self.digit_place]:
             self.image.set_alpha(game_over_opacity_index)
-        self.rect.y = 150 + game_over_index
+        self.rect.y = 200 + game_over_index
 
     def update(self, number):
         global mode
