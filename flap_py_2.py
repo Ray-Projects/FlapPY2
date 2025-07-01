@@ -349,6 +349,8 @@ class Score(pygame.sprite.Sprite):
         self.render(self.original_x, self.original_y, self.centered)
         if mode == "dead":
             self.dead()
+        if mode == "title":
+            self.image.set_alpha(0)
 
 class GameOver(pygame.sprite.Sprite):
     def __init__(self, type):
