@@ -23,7 +23,7 @@ class Base(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(bottomleft=(x, 1024))
 
     def move(self):
-        self.rect.x -= 3
+        self.rect.x -= 5
 
         if self.rect.x <= -important_coords[0]:
             self.rect.x = important_coords[0]
@@ -51,7 +51,7 @@ class Pipe(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        self.rect.x -= 3
+        self.rect.x -= 5
 
         if not(self.rect.x <= -self.image.width):
             return
