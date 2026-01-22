@@ -23,7 +23,7 @@ class Base(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(bottomleft=(x, 1024))
 
     def move(self):
-        self.rect.x -= 3
+        self.rect.x -= 5
 
         if self.rect.x <= -important_coords[0]:
             self.rect.x = important_coords[0]
@@ -51,7 +51,7 @@ class Pipe(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
-        self.rect.x -= 3
+        self.rect.x -= 5
 
         if not(self.rect.x <= -self.image.width):
             return
@@ -70,14 +70,14 @@ class PipeGap(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         width = 50
         self.image = pygame.Surface((width, pipe_distance))
-        self.image.set_alpha(0)
+        self.image.set_alpha(100)
         self.image.fill((255, 0, 0))
         self.rect = self.image.get_rect(topleft=(x + 104, y))
         self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
         if mode != "glide":
-            self.rect.x -= 3
+            self.rect.x -= 5
 
         if self.rect.x <= -self.image.width:
             self.kill()
@@ -204,7 +204,7 @@ class Bird(pygame.sprite.Sprite):
                 mode = "dead"
 
         if pygame.sprite.spritecollide(self, pipe_gaps, False, pygame.sprite.collide_rect):
-            if time_since_touching_pipe_gap > 60:
+            if time_since_touching_pipe_gap > 20:
                 score_val += 1
                 point_ogg.play()
             time_since_touching_pipe_gap = 0
